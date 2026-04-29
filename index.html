@@ -1,0 +1,2213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>SOVEREIGN</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#03020a; --bg2:#07060f; --bg3:#0c0b18;
+  --panel:rgba(8,7,20,0.97); --panel2:rgba(14,13,28,0.95);
+  --border:rgba(80,60,200,0.18); --border-hi:rgba(100,80,255,0.45);
+  --accent:#6644ff; --accent2:#33aaff; --gold:#ffd700;
+  --text:#b0aed0; --text-dim:#504e80; --text-bright:#ffffff;
+  --freq-red:#ff1133; --freq-orange:#ff6600; --freq-yellow:#ffcc00;
+  --freq-green:#00ff88; --freq-blue:#0099ff; --freq-purple:#bb00ff;
+  --glow:0 0 24px rgba(100,68,255,0.35);
+  --glow2:0 0 50px rgba(100,68,255,0.55);
+  --scanline:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,255,0.015) 2px,rgba(0,0,255,0.015) 4px);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;overflow:hidden;}
+body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;font-size:14px;position:relative;}
+
+/* SCANLINE OVERLAY */
+body::before{content:'';position:fixed;inset:0;background:var(--scanline);pointer-events:none;z-index:9000;opacity:0.6;}
+body::after{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(80,50,200,0.08) 0%,transparent 70%);pointer-events:none;z-index:0;}
+
+/* GRID BG */
+.grid-bg{position:fixed;inset:0;background-image:linear-gradient(rgba(60,40,160,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(60,40,160,0.04) 1px,transparent 1px);background-size:32px 32px;pointer-events:none;z-index:0;}
+
+/* ─── SCREENS ─── */
+.screen{display:none;position:fixed;inset:0;z-index:10;overflow:hidden;}
+.screen.active{display:flex;flex-direction:column;}
+
+/* ─── BOOT ─── */
+#boot{align-items:center;justify-content:center;background:var(--bg);}
+.boot-wrap{text-align:center;}
+.logo-text{font-family:'Cinzel',serif;font-size:clamp(40px,10vw,88px);font-weight:900;letter-spacing:0.35em;color:#fff;text-shadow:0 0 40px rgba(100,68,255,0.9),0 0 80px rgba(100,68,255,0.5),0 0 120px rgba(100,68,255,0.2);margin-bottom:6px;}
+.logo-sub{font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:0.5em;color:var(--accent);margin-bottom:64px;opacity:0.8;}
+.boot-line{font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--text-dim);letter-spacing:0.1em;margin-bottom:40px;}
+.boot-line span{color:var(--accent2);animation:blink 1s infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+
+/* ─── BUTTONS ─── */
+.btn{background:transparent;border:1px solid var(--accent);color:#fff;font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.3em;padding:13px 38px;cursor:pointer;text-transform:uppercase;position:relative;overflow:hidden;transition:all 0.25s;}
+.btn::before{content:'';position:absolute;inset:0;background:var(--accent);transform:translateX(-101%);transition:transform 0.25s;z-index:-1;}
+.btn:hover::before{transform:translateX(0);}
+.btn:hover{box-shadow:var(--glow2);}
+.btn:disabled{opacity:0.4;cursor:not-allowed;}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text-dim);font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:600;letter-spacing:0.2em;padding:9px 20px;cursor:pointer;text-transform:uppercase;transition:all 0.2s;}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent);}
+.btn-green{border-color:var(--freq-green);color:var(--freq-green);}
+.btn-green::before{background:var(--freq-green);}
+.btn-green:hover{color:#000;}
+.btn-gold{border-color:var(--gold);color:var(--gold);}
+.btn-gold::before{background:var(--gold);}
+.btn-gold:hover{color:#000;}
+
+/* ─── ONBOARDING ─── */
+#onboarding{align-items:center;justify-content:center;padding:20px;overflow-y:auto;}
+.ob-wrap{width:100%;max-width:660px;}
+.ob-header{text-align:center;margin-bottom:32px;}
+.ob-aeon-tag{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:0.5em;color:var(--accent);display:block;margin-bottom:8px;}
+.ob-title{font-family:'Cinzel',serif;font-size:20px;color:#fff;font-weight:600;letter-spacing:0.08em;}
+.progress-bar{width:100%;height:1px;background:rgba(100,68,255,0.15);margin-bottom:32px;position:relative;}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));box-shadow:0 0 8px var(--accent);transition:width 0.4s ease;}
+.q-block{background:rgba(10,8,25,0.95);border:1px solid var(--border);padding:28px;margin-bottom:14px;position:relative;}
+.q-block::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--accent),transparent);}
+.q-num{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--accent);letter-spacing:0.4em;margin-bottom:10px;}
+.q-text{font-size:16px;font-weight:600;color:#fff;line-height:1.55;margin-bottom:20px;}
+.q-input{width:100%;background:rgba(0,0,0,0.5);border:1px solid var(--border);color:#fff;font-family:'Rajdhani',sans-serif;font-size:15px;padding:12px 14px;outline:none;resize:none;transition:border-color 0.25s;}
+.q-input:focus{border-color:var(--accent);}
+.q-opts{display:grid;gap:7px;}
+.q-opt{background:rgba(0,0,0,0.35);border:1px solid var(--border);color:var(--text);font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:500;padding:10px 16px;cursor:pointer;text-align:left;transition:all 0.18s;}
+.q-opt:hover,.q-opt.sel{border-color:var(--accent);color:#fff;background:rgba(100,68,255,0.1);}
+.ob-nav{display:flex;justify-content:space-between;align-items:center;margin-top:14px;}
+
+/* ─── ANALYSIS ─── */
+#analysis{align-items:center;justify-content:center;text-align:center;padding:30px;}
+.analysis-wrap{max-width:580px;width:100%;}
+.analysis-tag{font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:0.4em;color:var(--accent);margin-bottom:20px;}
+.analysis-log{background:rgba(6,5,16,0.97);border:1px solid var(--border);padding:24px;text-align:left;font-family:'Share Tech Mono',monospace;font-size:11px;line-height:2.1;color:var(--text-dim);min-height:180px;margin-bottom:20px;}
+.log-l{opacity:0;animation:lin 0.3s ease forwards;}
+.log-l.g{color:var(--freq-green)}.log-l.b{color:var(--accent2)}.log-l.p{color:var(--freq-purple)}.log-l.gold{color:var(--gold)}
+@keyframes lin{to{opacity:1}}
+
+/* ─── RANK CEREMONY ─── */
+#rankup{align-items:center;justify-content:center;text-align:center;padding:40px 20px;background:radial-gradient(ellipse at center,#080220 0%,var(--bg) 65%);}
+.ceremony-wrap{max-width:560px;width:100%;}
+.ceremony-notice{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:0.5em;color:var(--accent);margin-bottom:28px;animation:pulse 1.8s infinite;}
+@keyframes pulse{0%,100%{opacity:0.5}50%{opacity:1}}
+.rank-glyph{font-family:'Cinzel',serif;font-size:clamp(64px,15vw,128px);font-weight:900;color:var(--gold);text-shadow:0 0 60px rgba(255,215,0,0.7),0 0 120px rgba(255,215,0,0.35);line-height:1;margin-bottom:8px;animation:rankIn 0.9s cubic-bezier(0.34,1.56,0.64,1) forwards;}
+@keyframes rankIn{from{opacity:0;transform:scale(0.4)}to{opacity:1;transform:scale(1)}}
+.rank-label-sm{font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:0.5em;color:var(--text-dim);margin-bottom:32px;}
+.title-glyph{font-family:'Cinzel',serif;font-size:21px;color:var(--freq-purple);text-shadow:0 0 20px rgba(187,0,255,0.5);margin-bottom:5px;}
+.title-label-sm{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--text-dim);letter-spacing:0.35em;margin-bottom:28px;}
+.stats-grid-sm{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:28px;}
+.stat-cell{background:rgba(8,6,20,0.95);border:1px solid var(--border);padding:12px 6px;text-align:center;}
+.stat-cell-val{font-family:'Cinzel',serif;font-size:22px;font-weight:700;color:var(--accent2);}
+.stat-cell-name{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--text-dim);letter-spacing:0.15em;margin-top:3px;}
+
+/* ─── SKILL UNLOCK CEREMONY ─── */
+#skill-unlock{align-items:center;justify-content:center;text-align:center;padding:40px 20px;background:radial-gradient(ellipse at center,#120525 0%,var(--bg) 65%);}
+.su-notice{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:0.5em;color:var(--freq-purple);margin-bottom:28px;animation:pulse 1.4s infinite;}
+.su-icon{font-size:72px;margin-bottom:14px;animation:float 3s ease-in-out infinite;}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
+.su-name{font-family:'Cinzel',serif;font-size:clamp(22px,5vw,40px);font-weight:900;color:var(--freq-purple);text-shadow:0 0 40px rgba(187,0,255,0.6);margin-bottom:5px;}
+.su-sub{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:0.35em;color:var(--text-dim);margin-bottom:20px;}
+.su-desc{max-width:380px;margin:0 auto 28px;font-size:13px;color:var(--text);line-height:1.8;background:rgba(10,5,25,0.95);border:1px solid rgba(187,0,255,0.2);padding:16px;}
+
+/* ─── AFFIRMATION OVERLAY ─── */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:8000;align-items:center;justify-content:center;padding:20px;}
+.overlay.active{display:flex;}
+.affirmation-box{max-width:500px;width:100%;text-align:center;animation:slideUp 0.7s ease;}
+@keyframes slideUp{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}
+.aff-date{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:0.4em;color:var(--text-dim);margin-bottom:20px;}
+.aff-rule{width:36px;height:1px;background:var(--accent);margin:0 auto 20px;}
+.aff-label{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:0.4em;color:var(--accent);margin-bottom:14px;}
+.aff-text{font-family:'Cinzel',serif;font-size:clamp(16px,3.5vw,24px);color:#fff;line-height:1.6;font-weight:600;margin-bottom:22px;font-style:italic;}
+.aff-speech{font-size:13px;color:var(--text);line-height:1.85;margin-bottom:30px;padding:16px 18px;background:rgba(10,8,25,0.95);border:1px solid var(--border);border-left:3px solid var(--accent);text-align:left;}
+.aff-speech-label{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--accent);letter-spacing:0.3em;margin-bottom:7px;}
+
+/* ─── POPUP QUEST ─── */
+.popup-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:7000;align-items:center;justify-content:center;padding:20px;}
+.popup-overlay.active{display:flex;}
+.popup-box{background:var(--bg2);border:1px solid var(--accent);max-width:440px;width:100%;padding:26px;box-shadow:var(--glow2);animation:popIn 0.4s cubic-bezier(0.34,1.56,0.64,1);}
+@keyframes popIn{from{opacity:0;transform:scale(0.78) translateY(20px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.popup-type{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:0.4em;color:var(--freq-orange);margin-bottom:12px;display:flex;align-items:center;gap:7px;}
+.popup-type::before{content:'';width:7px;height:7px;background:var(--freq-orange);border-radius:50%;animation:blink 0.8s infinite;flex-shrink:0;}
+.popup-title{font-family:'Cinzel',serif;font-size:18px;color:#fff;margin-bottom:9px;}
+.popup-desc{font-size:13px;color:var(--text);line-height:1.7;margin-bottom:16px;}
+.popup-rewards{display:flex;gap:14px;margin-bottom:16px;padding:9px 13px;background:rgba(0,0,0,0.35);border:1px solid var(--border);}
+.popup-reward{font-family:'Share Tech Mono',monospace;font-size:10px;}
+.popup-reward span{color:var(--accent2);}
+.popup-timer{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--freq-red);margin-bottom:16px;}
+.popup-btns{display:flex;gap:8px;}
+
+/* ─── TOAST ─── */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--panel2);border:1px solid var(--accent);padding:9px 20px;font-family:'Share Tech Mono',monospace;font-size:11px;color:#fff;z-index:9999;transition:transform 0.3s;white-space:nowrap;box-shadow:var(--glow);}
+.toast.show{transform:translateX(-50%) translateY(0);}
+
+/* ─── SIDEBAR ─── */
+.sidebar{position:fixed;top:0;left:0;bottom:0;width:260px;background:rgba(5,4,14,0.98);border-right:1px solid var(--border);z-index:5000;transform:translateX(-100%);transition:transform 0.3s cubic-bezier(0.4,0,0.2,1);display:flex;flex-direction:column;padding:20px 0;}
+.sidebar.open{transform:translateX(0);}
+.sidebar-overlay{display:none;position:fixed;inset:0;z-index:4999;background:rgba(0,0,0,0.6);}
+.sidebar-overlay.open{display:block;}
+.sidebar-header{padding:0 20px 20px;border-bottom:1px solid var(--border);margin-bottom:12px;}
+.sb-logo{font-family:'Cinzel',serif;font-size:16px;font-weight:700;letter-spacing:0.3em;color:#fff;}
+.sb-hunter{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--text-dim);letter-spacing:0.2em;margin-top:4px;}
+.sb-nav{flex:1;overflow-y:auto;padding:0 12px;}
+.sb-item{display:flex;align-items:center;gap:12px;padding:11px 12px;cursor:pointer;border-radius:0;transition:all 0.18s;font-size:13px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-dim);border:1px solid transparent;margin-bottom:3px;}
+.sb-item:hover{color:#fff;background:rgba(100,68,255,0.08);border-color:var(--border);}
+.sb-item.active{color:var(--accent);background:rgba(100,68,255,0.1);border-color:var(--border-hi);}
+.sb-item-icon{font-size:16px;width:22px;text-align:center;flex-shrink:0;}
+.sb-section-label{font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:0.4em;color:var(--text-dim);padding:12px 12px 5px;opacity:0.7;}
+.sb-bottom{padding:16px 12px 0;border-top:1px solid var(--border);}
+.api-status{display:flex;align-items:center;gap:8px;font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--text-dim);letter-spacing:0.15em;}
+.api-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+
+/* ─── MAIN LAYOUT ─── */
+.main-layout{display:none;position:fixed;inset:0;z-index:1;}
+.main-layout.active{display:flex;flex-direction:column;}
+.top-bar{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:rgba(5,4,14,0.97);border-bottom:1px solid var(--border);position:relative;z-index:100;flex-shrink:0;}
+.tb-left{display:flex;align-items:center;gap:12px;}
+.hamburger{background:transparent;border:1px solid var(--border);color:var(--text-dim);padding:7px 10px;cursor:pointer;font-size:16px;transition:all 0.2s;line-height:1;}
+.hamburger:hover{border-color:var(--accent);color:var(--accent);}
+.tb-title{font-family:'Cinzel',serif;font-size:13px;font-weight:700;letter-spacing:0.25em;color:#fff;}
+.tb-right{display:flex;align-items:center;gap:10px;}
+.tb-rank{display:flex;align-items:center;gap:6px;}
+.rank-badge-sm{width:28px;height:28px;border:1.5px solid var(--gold);display:flex;align-items:center;justify-content:center;font-family:'Cinzel',serif;font-size:13px;font-weight:700;color:var(--gold);box-shadow:0 0 10px rgba(255,215,0,0.3);}
+.rank-info-sm .rn{font-size:11px;font-weight:700;color:#fff;text-align:right;}
+.rank-info-sm .rl{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--text-dim);}
+.freq-dot-sm{width:8px;height:8px;border-radius:50%;animation:pulse 2s infinite;}
+.solars-sm{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--gold);display:flex;align-items:center;gap:4px;}
+
+/* ─── PAGE CONTAINER ─── */
+.page-wrap{flex:1;overflow:hidden;position:relative;}
+.page{display:none;position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;}
+.page.active{display:block;}
+.page-content{padding:14px;padding-bottom:24px;}
+
+/* ─── DASHBOARD PAGE ─── */
+.dashboard-grid{display:grid;gap:10px;}
+
+/* Character HUD */
+.char-hud{background:rgba(8,6,20,0.97);border:1px solid var(--border-hi);padding:18px;position:relative;overflow:hidden;}
+.char-hud::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--accent),var(--freq-purple),var(--accent2),transparent);}
+.char-hud-inner{display:flex;align-items:center;gap:16px;}
+.char-avatar{width:60px;height:60px;border:2px solid var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:26px;background:rgba(100,68,255,0.1);flex-shrink:0;position:relative;box-shadow:0 0 20px rgba(100,68,255,0.3);}
+.char-avatar::after{content:'';position:absolute;inset:-4px;border-radius:50%;border:1px solid rgba(100,68,255,0.2);}
+.char-info{flex:1;min-width:0;}
+.char-name{font-family:'Cinzel',serif;font-size:17px;color:#fff;font-weight:700;margin-bottom:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.char-title{font-size:11px;color:var(--freq-purple);letter-spacing:0.1em;margin-bottom:7px;}
+.char-xp-row{display:flex;align-items:center;gap:8px;}
+.xp-bar{flex:1;height:3px;background:rgba(100,68,255,0.1);}
+.xp-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));box-shadow:0 0 6px var(--accent);transition:width 0.8s ease;}
+.xp-lbl{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--text-dim);white-space:nowrap;}
+.char-right{text-align:right;flex-shrink:0;}
+.char-rank-big{font-family:'Cinzel',serif;font-size:30px;font-weight:900;color:var(--gold);text-shadow:0 0 20px rgba(255,215,0,0.5);line-height:1;}
+.char-rank-lbl{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--text-dim);letter-spacing:0.2em;}
+.char-solar{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--gold);margin-top:4px;}
+
+/* Freq panel */
+.freq-panel{background:rgba(8,6,20,0.97);border:1px solid var(--border);padding:14px 16px;}
+.freq-row{display:flex;align-items:center;justify-content:space-between;}
+.freq-left .freq-tag{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--text-dim);letter-spacing:0.35em;margin-bottom:3px;}
+.freq-state-text{font-family:'Cinzel',serif;font-size:18px;font-weight:700;}
+.freq-desc-text{font-size:10px;color:var(--text-dim);margin-top:2px;}
+.freq-orb-big{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;animation:orbPulse 3s infinite;}
+@keyframes orbPulse{0%,100%{box-shadow:0 0 12px currentColor}50%{box-shadow:0 0 28px currentColor,0 0 50px currentColor}}
+.state-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;}
+.state-cell{background:rgba(0,0,0,0.3);border:1px solid var(--border);padding:8px 12px;}
+.state-cell-lbl{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--text-dim);letter-spacing:0.2em;margin-bottom:3px;}
+.state-cell-val{font-size:12px;font-weight:700;display:flex;align-items:center;gap:5px;}
+.state-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;box-shadow:0 0 5px currentColor;}
+
+/* Stats mini */
+.stats-mini{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;}
+.stat-mini-cell{background:rgba(8,6,20,0.97);border:1px solid var(--border);padding:10px 6px;text-align:center;}
+.smc-val{font-family:'Cinzel',serif;font-size:20px;font-weight:700;color:var(--accent2);}
+.smc-name{font-family:'Share Tech Mono',monospace;font-size:7px;color:var(--text-dim);letter-spacing:0.1em;margin-top:2px;}
+
+/* Goal affirmation panel */
+.goal-panel{background:rgba(8,6,20,0.97);border:1px solid var(--border);padding:14px 16px;position:relative;overflow:hidden;}
+.goal-panel::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--freq-purple),transparent);}
+.goal-tag{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--freq-purple);letter-spacing:0.35em;margin-bottom:7px;}
+.goal-affirm{font-family:'Cinzel',serif;font-size:13px;color:#fff;line-height:1.6;font-style:italic;font-weight:600;}
+
+/* Active book */
+.book-hud{background:rgba(8,6,20,0.97);border:1px solid var(--border);padding:13px 15px;}
+.book-hud-tag{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--accent2);letter-spacing:0.3em;margin-bottom:6px;}
+.book-hud-title{font-size:13px;font-weight:700;color:#fff;margin-bottom:3px;}
+.book-hud-progress{display:flex;align-items:center;gap:8px;}
+.book-hud-bar{flex:1;height:3px;background:rgba(79,195,247,0.15);}
+.book-hud-fill{height:100%;background:var(--accent2);box-shadow:0 0 6px var(--accent2);transition:width 0.5s;}
+.book-hud-pct{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--accent2);}
+
+/* Active popup quest on dashboard */
+.active-quest-panel{background:rgba(255,102,0,0.04);border:1px solid rgba(255,102,0,0.25);border-left:3px solid var(--freq-orange);padding:13px 15px;cursor:pointer;transition:all 0.2s;}
+.active-quest-panel:hover{background:rgba(255,102,0,0.08);}
+.aqp-tag{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--freq-orange);letter-spacing:0.35em;margin-bottom:5px;display:flex;align-items:center;gap:6px;}
+.aqp-tag::before{content:'';width:6px;height:6px;background:var(--freq-orange);border-radius:50%;animation:blink 0.9s infinite;}
+.aqp-title{font-size:14px;font-weight:700;color:#fff;margin-bottom:2px;}
+.aqp-timer{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--freq-red);}
+
+/* Urgent alert panel */
+.urgent-panel{background:rgba(255,17,51,0.05);border:1px solid rgba(255,17,51,0.3);border-left:3px solid var(--freq-red);padding:11px 14px;animation:urgentPulse 1.5s infinite;}
+@keyframes urgentPulse{0%,100%{border-color:rgba(255,17,51,0.3)}50%{border-color:rgba(255,17,51,0.7)}}
+.urgent-tag{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--freq-red);letter-spacing:0.3em;margin-bottom:4px;}
+.urgent-text{font-size:12px;font-weight:700;color:#fff;}
+
+/* ─── GENERIC PAGE STYLES ─── */
+.page-header{padding:16px 14px 0;margin-bottom:2px;}
+.page-h-tag{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:0.4em;color:var(--accent);margin-bottom:5px;}
+.page-h-title{font-family:'Cinzel',serif;font-size:19px;color:#fff;font-weight:700;}
+
+/* SUB-TABS */
+.sub-tabs{display:flex;gap:6px;padding:12px 14px 0;flex-wrap:wrap;}
+.sub-tab{padding:7px 14px;font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;cursor:pointer;border:1px solid var(--border);color:var(--text-dim);background:transparent;transition:all 0.2s;white-space:nowrap;}
+.sub-tab.active{border-color:var(--accent);color:var(--accent);background:rgba(100,68,255,0.08);}
+
+/* MISSION CARDS */
+.mission-card{background:rgba(8,6,20,0.97);border:1px solid var(--border);padding:13px 15px;margin-bottom:7px;display:flex;align-items:center;gap:11px;transition:all 0.2s;position:relative;overflow:hidden;}
+.mission-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;}
+.mission-card.easy::before{background:var(--freq-green);}
+.mission-card.normal::before{background:var(--accent2);}
+.mission-card.hard::before{background:var(--freq-orange);}
+.mission-card.nightmare::before{background:var(--freq-red);}
+.mission-card.done{opacity:0.45;}
+.mission-card.done .mc-name{text-decoration:line-through;}
+.mission-card:hover{border-color:var(--border-hi);}
+.mc-check{width:18px;height:18px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0;transition:all 0.2s;cursor:pointer;}
+.mission-card.done .mc-check{background:var(--accent);border-color:var(--accent);}
+.mc-info{flex:1;min-width:0;}
+.mc-name{font-size:13px;font-weight:600;color:#fff;margin-bottom:2px;}
+.mc-meta{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--text-dim);}
+.mc-rewards{text-align:right;flex-shrink:0;}
+.mc-xp{font-size:11px;color:var(--accent2);font-weight:600;}
+.mc-sol{font-size:10px;color:var(--gold);}
+
+/* NON-NEG */
+.nn-card{background:rgba(255,17,51,0.04);border:1px solid rgba(255,17,51,0.18);border-left:2px solid var(--freq-red);padding:12px 15px;margin-bottom:7px;display:flex;align-items:center;gap:11px;cursor:pointer;transition:all 0.2s;}
+.nn-card.done{opacity:0.45;border-left-color:var(--freq-green);}
+.nn-card.done .mc-name{text-decoration:line-through;}
+.nn-check{width:18px;height:18px;border:1px solid rgba(255,17,51,0.4);display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0;}
+.nn-card.done .nn-check{background:var(--freq-green);border-color:var(--freq-green);color:#000;}
+
+/* MILESTONE */
+.milestone-item{display:flex;align-items:flex-start;gap:13px;padding:13px 15px;background:rgba(8,6,20,0.97);border:1px solid var(--border);margin-bottom:7px;transition:all 0.2s;}
+.milestone-item.active{border-color:var(--accent);background:rgba(100,68,255,0.04);}
+.milestone-item.completed{opacity:0.5;}
+.milestone-item.locked{opacity:0.3;}
+.ms-node{width:26px;height:26px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:'Cinzel',serif;font-size:11px;font-weight:700;flex-shrink:0;}
+.milestone-item.active .ms-node{border-color:var(--accent);color:var(--accent);background:rgba(100,68,255,0.15);}
+.milestone-item.completed .ms-node{border-color:var(--freq-green);color:var(--freq-green);}
+.milestone-item.locked .ms-node{border-color:var(--text-dim);color:var(--text-dim);}
+.ms-info{flex:1;}
+.ms-name{font-size:13px;font-weight:700;color:#fff;margin-bottom:3px;}
+.ms-timeframe{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--accent);letter-spacing:0.2em;margin-bottom:4px;}
+.ms-desc{font-size:11px;color:var(--text-dim);line-height:1.55;margin-bottom:6px;}
+.ms-input-area{margin-top:8px;}
+.ms-input{width:100%;background:rgba(0,0,0,0.5);border:1px solid var(--border);color:#fff;font-family:'Rajdhani',sans-serif;font-size:13px;padding:9px 12px;outline:none;resize:none;transition:border-color 0.2s;}
+.ms-input:focus{border-color:var(--accent);}
+.ms-submit{margin-top:6px;background:transparent;border:1px solid var(--accent);color:var(--accent);font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:700;letter-spacing:0.2em;padding:6px 14px;cursor:pointer;transition:all 0.2s;text-transform:uppercase;}
+.ms-submit:hover{background:rgba(100,68,255,0.15);}
+.ms-aeon-check{display:flex;align-items:center;gap:7px;font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--text-dim);padding:6px 0;}
+
+/* SIDE QUEST */
+.sq-card{background:rgba(255,215,0,0.02);border:1px solid rgba(255,215,0,0.18);border-left:2px solid var(--gold);padding:13px 15px;margin-bottom:8px;}
+.sq-tag{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--gold);letter-spacing:0.3em;margin-bottom:5px;}
+.sq-name{font-size:13px;font-weight:700;color:#fff;margin-bottom:3px;}
+.sq-benefit{font-size:11px;color:var(--freq-green);line-height:1.5;margin-bottom:5px;}
+.sq-desc{font-size:11px;color:var(--text-dim);line-height:1.5;margin-bottom:9px;}
+.sq-foot{display:flex;align-items:center;justify-content:space-between;}
+.sq-rewards-row{display:flex;gap:12px;font-family:'Share Tech Mono',monospace;font-size:10px;}
+.sq-rewards-row span{color:var(--gold);}
+
+/* SECTION HEADER */
+.sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px;margin-top:18px;}
+.sec-hdr:first-child{margin-top:0;}
+.sec-title{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:0.35em;color:var(--accent);text-transform:uppercase;}
+.sec-count{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--text-dim);}
+
+/* AEON CHAT */
+.chat-page{display:flex;flex-direction:column;height:100%;padding:0;}
+.chat-messages{flex:1;overflow-y:auto;padding:14px;}
+.chat-msg{margin-bottom:14px;animation:msgIn 0.3s ease;}
+@keyframes msgIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.msg-label{font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:0.3em;margin-bottom:5px;}
+.chat-msg.aeon .msg-label{color:var(--accent);}
+.chat-msg.user .msg-label{color:var(--text-dim);text-align:right;}
+.msg-bubble{padding:12px 15px;font-size:13px;line-height:1.75;max-width:90%;}
+.chat-msg.aeon .msg-bubble{background:rgba(8,6,20,0.97);border:1px solid var(--border);border-left:2px solid var(--accent);color:var(--text);}
+.chat-msg.user .msg-bubble{background:rgba(100,68,255,0.1);border:1px solid rgba(100,68,255,0.2);color:#fff;margin-left:auto;}
+.chat-input-area{padding:10px 14px;border-top:1px solid var(--border);background:rgba(5,4,14,0.98);flex-shrink:0;}
+.chat-input-row{display:flex;gap:7px;align-items:center;}
+.chat-input{flex:1;background:rgba(0,0,0,0.5);border:1px solid var(--border);color:#fff;font-family:'Rajdhani',sans-serif;font-size:14px;padding:10px 13px;outline:none;transition:border-color 0.2s;}
+.chat-input:focus{border-color:var(--accent);}
+.chat-send{background:var(--accent);border:none;color:#fff;font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.2em;padding:10px 16px;cursor:pointer;transition:all 0.2s;text-transform:uppercase;flex-shrink:0;}
+.chat-send:hover{background:#8866ff;}
+.chat-send:disabled{opacity:0.4;cursor:not-allowed;}
+.voice-btn{background:transparent;border:1px solid var(--border);color:var(--text-dim);padding:10px 12px;cursor:pointer;font-size:15px;transition:all 0.2s;flex-shrink:0;}
+.voice-btn:hover{border-color:var(--freq-red);color:var(--freq-red);}
+.voice-btn.recording{border-color:var(--freq-red);color:var(--freq-red);animation:recordPulse 1s infinite;}
+@keyframes recordPulse{0%,100%{box-shadow:0 0 0 rgba(255,17,51,0)}50%{box-shadow:0 0 12px rgba(255,17,51,0.5)}}
+.chat-toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.voice-toggle-btn{background:transparent;border:1px solid var(--border);color:var(--text-dim);font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:600;letter-spacing:0.15em;padding:5px 11px;cursor:pointer;transition:all 0.2s;}
+.voice-toggle-btn:hover{border-color:var(--accent);color:var(--accent);}
+
+/* JOURNAL */
+.journal-panel{background:rgba(8,6,20,0.97);border:1px solid var(--border);padding:16px;margin-bottom:10px;}
+.jp-label{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--accent);letter-spacing:0.35em;margin-bottom:7px;}
+.jp-question{font-size:14px;font-weight:600;color:#fff;margin-bottom:11px;line-height:1.5;}
+.jp-textarea{width:100%;background:rgba(0,0,0,0.5);border:1px solid var(--border);color:#fff;font-family:'Rajdhani',sans-serif;font-size:14px;padding:11px;outline:none;resize:none;line-height:1.6;min-height:85px;transition:border-color 0.2s;}
+.jp-textarea:focus{border-color:var(--accent);}
+.jp-voice-row{display:flex;justify-content:flex-end;margin-top:6px;}
+.aeon-feedback{background:rgba(100,68,255,0.04);border:1px solid rgba(100,68,255,0.18);border-left:2px solid var(--accent);padding:13px 15px;margin-top:12px;}
+.af-lbl{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--accent);letter-spacing:0.3em;margin-bottom:7px;}
+.af-text{font-size:13px;color:var(--text);line-height:1.8;}
+
+/* SKILLS */
+.skills-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:9px;}
+.skill-card{background:rgba(8,6,20,0.97);border:1px solid var(--border);padding:15px 11px;text-align:center;position:relative;overflow:hidden;transition:all 0.25s;}
+.skill-card:hover{border-color:var(--border-hi);transform:translateY(-2px);}
+.skill-card.legendary{border-color:rgba(255,215,0,0.4);}
+.skill-card.rare{border-color:rgba(187,0,255,0.4);}
+.skill-card.uncommon{border-color:rgba(51,170,255,0.4);}
+.skill-rarity-bar{position:absolute;top:0;left:0;right:0;height:1.5px;}
+.skill-card.legendary .skill-rarity-bar{background:linear-gradient(90deg,transparent,var(--gold),transparent);}
+.skill-card.rare .skill-rarity-bar{background:linear-gradient(90deg,transparent,var(--freq-purple),transparent);}
+.skill-card.uncommon .skill-rarity-bar{background:linear-gradient(90deg,transparent,var(--accent2),transparent);}
+.skill-icon{font-size:26px;margin-bottom:8px;}
+.skill-name{font-family:'Cinzel',serif;font-size:11px;color:#fff;margin-bottom:5px;font-weight:600;}
+.skill-rank-lbl{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--accent);letter-spacing:0.2em;margin-bottom:7px;}
+.skill-prog-bar{height:1.5px;background:rgba(100,68,255,0.15);margin-bottom:3px;}
+.skill-prog-fill{height:100%;background:var(--accent);box-shadow:0 0 5px var(--accent);}
+.skill-prog-pct{font-family:'Share Tech Mono',monospace;font-size:7px;color:var(--text-dim);}
+.hidden-skill{background:rgba(0,0,0,0.4);border:1px dashed rgba(100,68,255,0.15);padding:15px 11px;text-align:center;opacity:0.4;}
+.hidden-icon{font-size:22px;margin-bottom:7px;filter:blur(3px);}
+.hidden-lbl{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--text-dim);letter-spacing:0.2em;}
+
+/* STAT BARS */
+.stat-bar-row{background:rgba(8,6,20,0.97);border:1px solid var(--border);padding:12px 14px;margin-bottom:6px;}
+.sbr-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;}
+.sbr-name{font-size:13px;font-weight:700;color:#fff;}
+.sbr-val{font-family:'Cinzel',serif;font-size:15px;color:var(--accent2);font-weight:700;}
+.sbr-track{height:3px;background:rgba(100,68,255,0.1);margin-bottom:4px;}
+.sbr-fill{height:100%;transition:width 1s cubic-bezier(0.4,0,0.2,1);}
+.sbr-desc{font-size:10px;color:var(--text-dim);}
+
+/* STREAK */
+.streak-card{background:rgba(8,6,20,0.97);border:1px solid var(--border);padding:12px 14px;margin-bottom:6px;display:flex;align-items:center;justify-content:space-between;}
+.streak-left .streak-name{font-size:13px;font-weight:600;color:#fff;margin-bottom:2px;}
+.streak-left .streak-sub{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--text-dim);}
+.streak-dots{display:flex;gap:3px;margin-top:5px;flex-wrap:wrap;max-width:140px;}
+.sdot{width:7px;height:7px;border-radius:1px;}
+.sdot.done{background:var(--freq-green);box-shadow:0 0 4px var(--freq-green);}
+.sdot.miss{background:rgba(255,17,51,0.3);}
+.sdot.empty{background:rgba(100,68,255,0.1);}
+.streak-right{text-align:right;}
+.streak-num{font-family:'Cinzel',serif;font-size:26px;font-weight:700;line-height:1;}
+.streak-num.hot{color:var(--freq-red);text-shadow:0 0 10px rgba(255,17,51,0.5);}
+.streak-num.cold{color:var(--text-dim);}
+.streak-num.warm{color:var(--freq-orange);}
+.streak-lbl{font-family:'Share Tech Mono',monospace;font-size:7px;color:var(--text-dim);letter-spacing:0.2em;}
+
+/* FINANCE */
+.fin-summary{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
+.fin-cell{background:rgba(8,6,20,0.97);border:1px solid var(--border);padding:12px 14px;}
+.fin-cell-lbl{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--text-dim);letter-spacing:0.2em;margin-bottom:4px;}
+.fin-cell-val{font-family:'Cinzel',serif;font-size:20px;font-weight:700;}
+.fin-tx{background:rgba(8,6,20,0.97);border:1px solid var(--border);padding:10px 13px;margin-bottom:5px;display:flex;align-items:center;justify-content:space-between;}
+.fin-tx-left .ftl-desc{font-size:12px;font-weight:600;color:#fff;margin-bottom:1px;}
+.fin-tx-left .ftl-cat{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--text-dim);letter-spacing:0.15em;}
+.fin-tx-amount{font-family:'Cinzel',serif;font-size:15px;font-weight:700;}
+.fin-tx-amount.pos{color:var(--freq-green);}
+.fin-tx-amount.neg{color:var(--freq-red);}
+
+/* VIDEO STEPS */
+.video-step{background:rgba(8,6,20,0.97);border:1px solid var(--border);margin-bottom:9px;overflow:hidden;transition:all 0.2s;}
+.video-step.current{border-color:var(--accent);box-shadow:0 0 14px rgba(100,68,255,0.12);}
+.video-step.watched{opacity:0.6;border-color:var(--freq-green);}
+.video-step.locked{opacity:0.3;pointer-events:none;}
+.vs-header{display:flex;align-items:flex-start;gap:11px;padding:13px 14px;}
+.vs-num{width:26px;height:26px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:'Cinzel',serif;font-size:11px;font-weight:700;flex-shrink:0;}
+.video-step.current .vs-num{border-color:var(--accent);color:var(--accent);}
+.video-step.watched .vs-num{border-color:var(--freq-green);color:var(--freq-green);}
+.vs-info .vs-lbl{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--text-dim);letter-spacing:0.2em;margin-bottom:2px;}
+.vs-info .vs-title{font-size:13px;font-weight:700;color:#fff;margin-bottom:2px;}
+.vs-info .vs-why{font-size:10px;color:var(--text-dim);line-height:1.5;}
+.vs-thumb{width:100%;aspect-ratio:16/9;background:linear-gradient(135deg,#060314,#0d0628);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:7px;cursor:pointer;position:relative;overflow:hidden;min-height:120px;}
+.vs-thumb img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0;}
+.vs-play{width:48px;height:48px;border-radius:50%;background:rgba(255,0,0,0.85);display:flex;align-items:center;justify-content:center;font-size:18px;z-index:1;transition:transform 0.2s;}
+.vs-play:hover{transform:scale(1.1);}
+.vs-actions{display:flex;gap:7px;padding:10px 13px;border-top:1px solid var(--border);}
+.vs-watch-btn{flex:1;background:transparent;border:1px solid var(--freq-red);color:var(--freq-red);font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:700;letter-spacing:0.15em;padding:7px;cursor:pointer;transition:all 0.2s;text-transform:uppercase;}
+.vs-watch-btn:hover{background:rgba(255,17,51,0.1);}
+.vs-done-btn{flex:1;background:transparent;border:1px solid var(--freq-green);color:var(--freq-green);font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:700;letter-spacing:0.15em;padding:7px;cursor:pointer;transition:all 0.2s;text-transform:uppercase;}
+.vs-done-btn:hover{background:rgba(0,255,136,0.08);}
+
+/* BOOK CARDS */
+.book-rec{background:rgba(8,6,20,0.97);border:1px solid var(--border);padding:13px;margin-bottom:7px;display:flex;gap:12px;}
+.book-cover{width:42px;height:56px;background:linear-gradient(135deg,var(--accent),var(--freq-purple));display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;border-radius:2px;}
+.book-info .book-title{font-size:13px;font-weight:700;color:#fff;margin-bottom:1px;}
+.book-info .book-author{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--text-dim);letter-spacing:0.15em;margin-bottom:5px;}
+.book-info .book-why{font-size:10px;color:var(--text-dim);line-height:1.5;margin-bottom:7px;}
+.active-book{background:rgba(8,6,20,0.97);border:1px solid var(--border);border-left:2px solid var(--accent);padding:13px;margin-bottom:8px;}
+.ab-title{font-family:'Cinzel',serif;font-size:14px;color:#fff;font-weight:600;margin-bottom:1px;}
+.ab-author{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--text-dim);letter-spacing:0.15em;margin-bottom:10px;}
+.ab-prog-wrap{display:flex;align-items:center;gap:8px;margin-bottom:9px;}
+.ab-prog-bar{flex:1;height:3px;background:rgba(100,68,255,0.1);}
+.ab-prog-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));box-shadow:0 0 5px var(--accent);transition:width 0.4s;}
+.ab-prog-lbl{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--text-dim);white-space:nowrap;}
+.ab-page-row{display:flex;gap:7px;margin-bottom:8px;}
+.ab-page-input{flex:1;background:rgba(0,0,0,0.5);border:1px solid var(--border);color:#fff;font-family:'Rajdhani',sans-serif;font-size:13px;padding:7px 10px;outline:none;}
+.ab-page-input:focus{border-color:var(--accent);}
+
+/* SHOP */
+.shop-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:9px;}
+.shop-item{background:rgba(8,6,20,0.97);border:1px solid var(--border);padding:14px 11px;text-align:center;cursor:pointer;transition:all 0.25s;}
+.shop-item:hover{border-color:var(--gold);transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,0.5);}
+.shop-item.rare{border-color:rgba(187,0,255,0.25);}
+.shop-item.rare:hover{border-color:var(--freq-purple);}
+.si-icon{font-size:26px;margin-bottom:7px;}
+.si-name{font-size:12px;font-weight:700;color:#fff;margin-bottom:4px;}
+.si-desc{font-size:9px;color:var(--text-dim);margin-bottom:9px;line-height:1.4;}
+.si-price{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--gold);}
+
+/* REPORT */
+.report-section{background:rgba(8,6,20,0.97);border:1px solid var(--border);padding:15px;margin-bottom:9px;}
+.report-lbl{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--accent);letter-spacing:0.35em;margin-bottom:9px;}
+.report-text{font-size:13px;color:var(--text);line-height:1.8;}
+.report-stat-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);}
+.report-stat-row:last-child{border-bottom:none;}
+.rsr-lbl{font-size:12px;color:var(--text-dim);}
+.rsr-val{font-family:'Cinzel',serif;font-size:13px;color:#fff;font-weight:700;}
+
+/* M-B-S */
+.pillar-card{background:rgba(8,6,20,0.97);border:1px solid var(--border);padding:16px;margin-bottom:10px;position:relative;overflow:hidden;}
+.pillar-card::before{content:'';position:absolute;top:0;left:0;bottom:0;width:2px;}
+.pillar-card.mind::before{background:var(--freq-blue);}
+.pillar-card.body::before{background:var(--freq-green);}
+.pillar-card.spirit::before{background:var(--freq-purple);}
+.pillar-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.pillar-hdr-left{display:flex;align-items:center;gap:10px;}
+.pillar-icon{font-size:26px;}
+.pillar-name{font-family:'Cinzel',serif;font-size:15px;color:#fff;font-weight:700;}
+.pillar-focus{font-size:10px;color:var(--text-dim);margin-top:1px;}
+.pillar-status-badge{font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:0.2em;padding:3px 9px;border:1px solid;}
+.pillar-status-badge.STRONG{color:var(--freq-green);border-color:var(--freq-green);}
+.pillar-status-badge.MODERATE{color:var(--freq-yellow);border-color:var(--freq-yellow);}
+.pillar-status-badge.DEVELOPING{color:var(--freq-orange);border-color:var(--freq-orange);}
+.pillar-score-bar{height:3px;background:rgba(100,68,255,0.1);margin-bottom:6px;}
+.pillar-score-fill{height:100%;transition:width 1s ease;box-shadow:0 0 5px currentColor;}
+.pillar-score-lbl{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--text-dim);margin-bottom:9px;}
+.pillar-desc{font-size:11px;color:var(--text-dim);line-height:1.7;margin-bottom:11px;}
+.pillar-actions{display:grid;gap:5px;}
+.pillar-action{background:rgba(0,0,0,0.3);border:1px solid var(--border);padding:9px 13px;display:flex;align-items:center;justify-content:space-between;}
+.pa-text{font-size:11px;color:var(--text);flex:1;margin-right:9px;}
+.pa-check{width:16px;height:16px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:9px;cursor:pointer;transition:all 0.2s;flex-shrink:0;}
+.pa-check.done{background:var(--accent);border-color:var(--accent);}
+.blockage-card{background:rgba(255,17,51,0.03);border:1px solid rgba(255,17,51,0.13);border-left:2px solid var(--freq-red);padding:12px 14px;margin-bottom:7px;}
+.blockage-area{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--freq-red);letter-spacing:0.3em;margin-bottom:5px;}
+.blockage-desc{font-size:11px;color:var(--text);line-height:1.6;margin-bottom:6px;}
+.blockage-remedy{font-size:11px;color:var(--freq-green);line-height:1.6;}
+.blockage-remedy::before{content:'▸ REMEDY: ';font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:0.1em;}
+
+/* GOAL PANEL */
+.goal-master{background:rgba(8,6,20,0.97);border:1px solid var(--border);padding:16px;margin-bottom:10px;position:relative;overflow:hidden;}
+.goal-master::before{content:'';position:absolute;top:0;left:0;right:0;height:1.5px;background:linear-gradient(90deg,var(--accent),var(--freq-purple),var(--accent2));}
+.gm-lbl{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--accent);letter-spacing:0.4em;margin-bottom:8px;}
+.gm-text{font-family:'Cinzel',serif;font-size:14px;color:#fff;font-weight:600;line-height:1.55;margin-bottom:10px;}
+.gm-why{font-size:11px;color:var(--text-dim);line-height:1.7;font-style:italic;}
+
+/* BOOK QUIZ OVERLAY */
+.bq-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:8500;align-items:center;justify-content:center;padding:20px;overflow-y:auto;}
+.bq-overlay.active{display:flex;}
+.bq-box{background:var(--bg2);border:1px solid var(--accent);max-width:560px;width:100%;padding:24px;box-shadow:var(--glow2);}
+.bq-title{font-family:'Cinzel',serif;font-size:16px;color:#fff;margin-bottom:4px;}
+.bq-sub{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--text-dim);letter-spacing:0.3em;margin-bottom:18px;}
+.bq-q{margin-bottom:14px;}
+.bq-q-lbl{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--accent);letter-spacing:0.2em;margin-bottom:5px;}
+.bq-q-text{font-size:13px;font-weight:600;color:#fff;margin-bottom:7px;line-height:1.5;}
+.bq-q-input{width:100%;background:rgba(0,0,0,0.5);border:1px solid var(--border);color:#fff;font-family:'Rajdhani',sans-serif;font-size:13px;padding:9px 11px;outline:none;resize:none;transition:border-color 0.2s;}
+.bq-q-input:focus{border-color:var(--accent);}
+
+/* GENERIC INPUT */
+.q-input-field{width:100%;background:rgba(0,0,0,0.5);border:1px solid var(--border);color:#fff;font-family:'Rajdhani',sans-serif;font-size:14px;padding:10px 12px;outline:none;resize:none;transition:border-color 0.2s;}
+.q-input-field:focus{border-color:var(--accent);}
+select.q-input-field{cursor:pointer;}
+
+/* LOADING DOTS */
+.ld{display:inline-flex;gap:4px;align-items:center;}
+.ld span{width:4px;height:4px;border-radius:50%;background:var(--accent);animation:ldBounce 1s infinite;}
+.ld span:nth-child(2){animation-delay:.15s;}
+.ld span:nth-child(3){animation-delay:.3s;}
+@keyframes ldBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+
+::-webkit-scrollbar{width:3px;}
+::-webkit-scrollbar-track{background:var(--bg);}
+::-webkit-scrollbar-thumb{background:rgba(100,68,255,0.5);}
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+
+<!-- BOOT -->
+<div id="boot" class="screen active">
+  <div class="boot-wrap">
+    <div class="logo-text">SOVEREIGN</div>
+    <div class="logo-sub">POWERED BY AEON</div>
+    <div class="boot-line">SYSTEM INITIALISING<span>_</span></div>
+    <button class="btn" onclick="startOnboarding()">INITIATE AWAKENING</button>
+  </div>
+</div>
+
+<!-- ONBOARDING -->
+<div id="onboarding" class="screen">
+  <div class="ob-wrap">
+    <div class="ob-header">
+      <span class="ob-aeon-tag">AEON // HUNTER ASSESSMENT PROTOCOL</span>
+      <div class="ob-title">The System is listening. Speak truthfully.</div>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+    <div class="q-block">
+      <div class="q-num" id="q-label">QUESTION 01 / 12</div>
+      <div class="q-text" id="q-text"></div>
+      <div id="q-answer-area"></div>
+    </div>
+    <div class="ob-nav">
+      <button class="btn-ghost" id="btn-back" onclick="prevQuestion()" style="visibility:hidden">← BACK</button>
+      <button class="btn" id="btn-next" onclick="nextQuestion()">NEXT →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ANALYSIS -->
+<div id="analysis" class="screen">
+  <div class="analysis-wrap">
+    <div class="analysis-tag">AEON // PROCESSING HUNTER DATA</div>
+    <div class="analysis-log" id="analysis-log"></div>
+    <div id="analysis-btn-area"></div>
+  </div>
+</div>
+
+<!-- RANK CEREMONY -->
+<div id="rankup" class="screen">
+  <div class="ceremony-wrap">
+    <div class="ceremony-notice">⚡ AEON SYSTEM NOTIFICATION ⚡</div>
+    <div class="rank-glyph" id="ceremony-rank">B</div>
+    <div class="rank-label-sm">RANK ASSIGNED</div>
+    <div class="title-glyph" id="ceremony-title">The Awakened Mind</div>
+    <div class="title-label-sm">INITIAL TITLE BESTOWED</div>
+    <div class="stats-grid-sm" id="ceremony-stats"></div>
+    <button class="btn" onclick="enterDashboard()">ENTER THE SYSTEM →</button>
+  </div>
+</div>
+
+<!-- SKILL UNLOCK -->
+<div id="skill-unlock" class="screen">
+  <div style="text-align:center;padding:40px 20px;max-width:460px;margin:0 auto">
+    <div class="su-notice">⚡ NEW SKILL UNLOCKED ⚡</div>
+    <div class="su-icon" id="su-icon">🧠</div>
+    <div class="su-name" id="su-name">IRON FOCUS</div>
+    <div class="su-sub">SKILL ACQUIRED — RANK: BEGINNER</div>
+    <div class="su-desc" id="su-desc">Through repeated observation, AEON has detected a pattern.</div>
+    <button class="btn" onclick="showMainLayout()">ACKNOWLEDGE →</button>
+  </div>
+</div>
+
+<!-- AFFIRMATION OVERLAY -->
+<div class="overlay" id="affirmation-overlay">
+  <div class="affirmation-box">
+    <div class="aff-date" id="aff-date"></div>
+    <div class="aff-rule"></div>
+    <div class="aff-label">⚡ AEON // DAILY TRANSMISSION</div>
+    <div class="aff-text" id="aff-text">"You are already becoming what you declared."</div>
+    <div class="aff-speech">
+      <div class="aff-speech-label">AEON SPEAKS</div>
+      <div id="aff-speech-text">The System observes. Begin the day with intention.</div>
+    </div>
+    <button class="btn" style="width:100%;font-size:12px;padding:12px" onclick="closeAffirmation()">I AM READY →</button>
+  </div>
+</div>
+
+<!-- POPUP QUEST -->
+<div class="popup-overlay" id="popup-overlay">
+  <div class="popup-box">
+    <div class="popup-type" id="popup-type-label">POP-UP QUEST</div>
+    <div class="popup-title" id="popup-title">The Iron Hour</div>
+    <div class="popup-desc" id="popup-desc">AEON has detected a window. Act now.</div>
+    <div class="popup-rewards">
+      <div class="popup-reward">XP <span id="popup-xp">+150</span></div>
+      <div class="popup-reward">SOLARS <span id="popup-solar">◈ +80</span></div>
+    </div>
+    <div class="popup-timer" id="popup-timer">⏱ TIME LIMIT: 01:00:00</div>
+    <div class="popup-btns">
+      <button class="btn" style="flex:1;padding:10px;font-size:11px" onclick="acceptQuest()">ACCEPT</button>
+      <button class="btn-ghost" style="flex:1;padding:10px;font-size:11px" onclick="declineQuest()">DECLINE</button>
+    </div>
+  </div>
+</div>
+
+<!-- BOOK QUIZ OVERLAY -->
+<div class="bq-overlay" id="book-quiz-overlay">
+  <div class="bq-box">
+    <div class="bq-title" id="bq-title">AEON ASSESSMENT</div>
+    <div class="bq-sub">THE SYSTEM WILL NOW TEST YOUR COMPREHENSION</div>
+    <div id="bq-questions-area"></div>
+    <div id="bq-result-area" style="display:none"></div>
+    <div style="display:flex;gap:8px;margin-top:14px" id="bq-btn-row">
+      <button class="btn" style="flex:1;font-size:11px;padding:11px" onclick="submitBookQuiz()">SUBMIT TO AEON →</button>
+      <button class="btn-ghost" style="font-size:11px;padding:11px" onclick="document.getElementById('book-quiz-overlay').classList.remove('active')">LATER</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- SIDEBAR -->
+<div class="sidebar-overlay" id="sb-overlay" onclick="closeSidebar()"></div>
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <div class="sb-logo">⚡ SOVEREIGN</div>
+    <div class="sb-hunter" id="sb-hunter-name">Hunter</div>
+  </div>
+  <div class="sb-nav">
+    <div class="sb-section-label">NAVIGATION</div>
+    <div class="sb-item active" onclick="navigateTo('dashboard',this)" id="nav-dashboard">
+      <span class="sb-item-icon">⚔️</span> Dashboard
+    </div>
+    <div class="sb-item" onclick="navigateTo('aeon',this)" id="nav-aeon">
+      <span class="sb-item-icon">🔮</span> AEON
+    </div>
+    <div class="sb-item" onclick="navigateTo('journal',this)" id="nav-journal">
+      <span class="sb-item-icon">📓</span> Journal
+    </div>
+    <div class="sb-section-label">MISSIONS</div>
+    <div class="sb-item" onclick="navigateTo('missions',this)" id="nav-missions">
+      <span class="sb-item-icon">⚡</span> Mission Hub
+    </div>
+    <div class="sb-section-label">GROWTH</div>
+    <div class="sb-item" onclick="navigateTo('growth',this)" id="nav-growth">
+      <span class="sb-item-icon">📊</span> Skills & Report
+    </div>
+    <div class="sb-section-label">KNOWLEDGE</div>
+    <div class="sb-item" onclick="navigateTo('knowledge',this)" id="nav-knowledge">
+      <span class="sb-item-icon">📚</span> Learn & Finance
+    </div>
+    <div class="sb-section-label">STORE</div>
+    <div class="sb-item" onclick="navigateTo('shop',this)" id="nav-shop">
+      <span class="sb-item-icon">◈</span> Solar Exchange
+    </div>
+  </div>
+  <div class="sb-bottom">
+    <div class="api-status">
+      <div class="api-dot" id="api-dot" style="background:var(--freq-green);box-shadow:0 0 5px var(--freq-green)"></div>
+      <span id="api-status-text">AEON ONLINE</span>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN LAYOUT -->
+<div class="main-layout" id="main-layout">
+  <div class="top-bar">
+    <div class="tb-left">
+      <button class="hamburger" onclick="openSidebar()">☰</button>
+      <div class="tb-title" id="tb-title">DASHBOARD</div>
+    </div>
+    <div class="tb-right">
+      <div class="freq-dot-sm" id="tb-freq-dot" style="color:var(--freq-blue);background:var(--freq-blue)"></div>
+      <div class="tb-rank">
+        <div class="rank-info-sm">
+          <div class="rn" id="tb-rank-name">B-RANK</div>
+          <div class="rl" id="tb-level">LVL 7</div>
+        </div>
+        <div class="rank-badge-sm" id="tb-rank-badge">B</div>
+      </div>
+      <div class="solars-sm">◈ <span id="tb-solars">0</span></div>
+    </div>
+  </div>
+
+  <div class="page-wrap">
+    <!-- DASHBOARD PAGE -->
+    <div class="page active" id="page-dashboard">
+      <div class="page-content">
+        <div class="dashboard-grid" id="dashboard-grid">
+          <!-- Character HUD -->
+          <div class="char-hud">
+            <div class="char-hud-inner">
+              <div class="char-avatar">⚔️</div>
+              <div class="char-info">
+                <div class="char-name" id="dash-name">Hunter</div>
+                <div class="char-title" id="dash-title">The Awakened Mind</div>
+                <div class="char-xp-row">
+                  <div class="xp-bar"><div class="xp-fill" id="dash-xp-fill" style="width:30%"></div></div>
+                  <div class="xp-lbl" id="dash-xp-lbl">0/500</div>
+                </div>
+              </div>
+              <div class="char-right">
+                <div class="char-rank-big" id="dash-rank">B</div>
+                <div class="char-rank-lbl">RANK</div>
+                <div class="char-solar">◈ <span id="dash-solars">0</span></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Frequency + States -->
+          <div class="freq-panel">
+            <div class="freq-row">
+              <div class="freq-left">
+                <div class="freq-tag">FREQUENCY STATE</div>
+                <div class="freq-state-text" id="dash-freq-state" style="color:var(--freq-blue)">ELEVATED</div>
+                <div class="freq-desc-text" id="dash-freq-desc">Sharp, focused, intentional.</div>
+              </div>
+              <div class="freq-orb-big" id="dash-freq-orb" style="color:var(--freq-blue)">🔵</div>
+            </div>
+            <div class="state-row">
+              <div class="state-cell">
+                <div class="state-cell-lbl">EMOTIONAL STATE</div>
+                <div class="state-cell-val">
+                  <span class="state-dot" id="emo-dot" style="color:var(--freq-green);background:var(--freq-green)"></span>
+                  <span id="emo-label" style="color:var(--freq-green)">Grounded</span>
+                </div>
+              </div>
+              <div class="state-cell">
+                <div class="state-cell-lbl">MENTAL STATE</div>
+                <div class="state-cell-val">
+                  <span class="state-dot" id="men-dot" style="color:var(--freq-blue);background:var(--freq-blue)"></span>
+                  <span id="men-label" style="color:var(--freq-blue)">Focused</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Goal Affirmation -->
+          <div class="goal-panel">
+            <div class="goal-tag">⚡ MAIN OBJECTIVE — AEON SYNTHESIS</div>
+            <div class="goal-affirm" id="dash-goal-affirm">Complete your assessment to reveal your mission.</div>
+          </div>
+
+          <!-- Stats Mini -->
+          <div class="stats-mini" id="dash-stats-mini"></div>
+
+          <!-- Active Book -->
+          <div class="book-hud" id="dash-book-hud" style="display:none">
+            <div class="book-hud-tag">📖 CURRENT READING</div>
+            <div class="book-hud-title" id="dash-book-title">—</div>
+            <div class="book-hud-progress">
+              <div class="book-hud-bar"><div class="book-hud-fill" id="dash-book-fill" style="width:0%"></div></div>
+              <div class="book-hud-pct" id="dash-book-pct">0%</div>
+            </div>
+          </div>
+
+          <!-- Urgent alerts inject here -->
+          <div id="dash-urgent-area"></div>
+
+          <!-- Active pop-up quest on dashboard -->
+          <div id="dash-active-quest" style="display:none" class="active-quest-panel" onclick="document.getElementById('popup-overlay').classList.add('active')">
+            <div class="aqp-tag">ACTIVE POP-UP QUEST</div>
+            <div class="aqp-title" id="dash-quest-title">—</div>
+            <div class="aqp-timer" id="dash-quest-timer">⏱ —</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AEON PAGE -->
+    <div class="page" id="page-aeon">
+      <div class="chat-page" style="height:calc(100vh - 52px)">
+        <div class="chat-messages" id="chat-messages"></div>
+        <div class="chat-input-area">
+          <div class="chat-toolbar">
+            <div style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--text-dim);letter-spacing:0.3em">AEON // DIRECT CHANNEL</div>
+            <button class="voice-toggle-btn" id="voice-toggle-btn" onclick="toggleVoice()">🔇 VOICE OFF</button>
+          </div>
+          <div class="chat-input-row">
+            <button class="voice-btn" id="chat-voice-btn" onclick="toggleVoiceInput('chat')" title="Voice input">🎤</button>
+            <input class="chat-input" id="chat-input" placeholder="Speak to AEON..." onkeydown="if(event.key==='Enter')sendChat()">
+            <button class="chat-send" id="chat-send-btn" onclick="sendChat()">SEND</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- JOURNAL PAGE -->
+    <div class="page" id="page-journal">
+      <div class="sub-tabs">
+        <button class="sub-tab active" onclick="switchSubTab('journal','daily',this)">DAILY ENTRY</button>
+        <button class="sub-tab" onclick="switchSubTab('journal','quick',this)">QUICK LOG</button>
+      </div>
+      <div class="page-content">
+        <div id="journal-daily-tab">
+          <div id="journal-prompts"></div>
+          <button class="btn" style="width:100%;font-size:11px;padding:12px;margin-top:6px" id="journal-submit-btn" onclick="submitJournal()">SUBMIT TO AEON FOR ANALYSIS</button>
+          <div id="journal-feedback"></div>
+        </div>
+        <div id="journal-quick-tab" style="display:none">
+          <div class="journal-panel">
+            <div class="jp-label">QUICK LOG — ANY TIME</div>
+            <div class="jp-question">What is on your mind right now?</div>
+            <textarea class="jp-textarea" id="quick-log-input" rows="6" placeholder="Speak freely. AEON analyses everything..."></textarea>
+            <div class="jp-voice-row">
+              <button class="voice-btn" onclick="toggleVoiceInput('quick')" title="Voice input">🎤</button>
+            </div>
+          </div>
+          <button class="btn" style="width:100%;font-size:11px;padding:12px" onclick="submitQuickLog()">LOG ENTRY</button>
+          <div id="quick-feedback"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MISSIONS HUB PAGE -->
+    <div class="page" id="page-missions">
+      <div class="sub-tabs">
+        <button class="sub-tab active" onclick="switchSubTab('missions','daily',this)">DAILY QUESTS</button>
+        <button class="sub-tab" onclick="switchSubTab('missions','nn',this)">NON-NEG</button>
+        <button class="sub-tab" onclick="switchSubTab('missions','side',this)">SIDE QUESTS</button>
+        <button class="sub-tab" onclick="switchSubTab('missions','milestones',this)">MILESTONES</button>
+        <button class="sub-tab" onclick="switchSubTab('missions','mbs',this)">M·B·S</button>
+        <button class="sub-tab" onclick="switchSubTab('missions','goals',this)">GOALS</button>
+      </div>
+      <div class="page-content">
+        <div id="missions-daily-tab">
+          <div class="sec-hdr"><div class="sec-title">⚡ DAILY MISSIONS</div><div class="sec-count" id="mission-count">0/0</div></div>
+          <div id="missions-list"></div>
+          <div style="margin-top:14px">
+            <button class="btn-ghost" style="width:100%;font-size:10px;padding:10px" onclick="triggerPopupQuest()">⚡ SIMULATE POP-UP QUEST</button>
+          </div>
+        </div>
+        <div id="missions-nn-tab" style="display:none">
+          <div class="sec-hdr"><div class="sec-title">🔴 NON-NEGOTIABLES</div><div class="sec-count" id="nn-count">0/0</div></div>
+          <div id="nn-list"></div>
+        </div>
+        <div id="missions-side-tab" style="display:none">
+          <div class="sec-hdr"><div class="sec-title">⭐ SIDE QUESTS</div><div class="sec-count">OPTIONAL · HIGH REWARD</div></div>
+          <div id="side-quests-list"></div>
+        </div>
+        <div id="missions-milestones-tab" style="display:none">
+          <div class="sec-hdr"><div class="sec-title">📍 MILESTONE ROADMAP</div><div class="sec-count" id="milestone-count">0/0</div></div>
+          <div style="background:rgba(100,68,255,0.04);border:1px solid var(--border);border-left:2px solid var(--accent);padding:11px 13px;margin-bottom:14px;font-size:11px;color:var(--text-dim);line-height:1.7">
+            AEON monitors your progress and unlocks milestones automatically. You cannot manually check these off — the System decides when you've earned it.
+          </div>
+          <div id="milestones-list"></div>
+        </div>
+        <div id="missions-mbs-tab" style="display:none">
+          <div id="pillars-loading" style="display:none;text-align:center;padding:32px 0;font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--accent)">AEON CALIBRATING PILLARS <span class="ld"><span></span><span></span><span></span></span></div>
+          <div id="pillars-content"></div>
+        </div>
+        <div id="missions-goals-tab" style="display:none">
+          <div id="goals-loading" style="display:none;text-align:center;padding:32px 0;font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--accent)">AEON ANALYSING GOALS <span class="ld"><span></span><span></span><span></span></span></div>
+          <div id="goals-content"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- GROWTH PAGE -->
+    <div class="page" id="page-growth">
+      <div class="sub-tabs">
+        <button class="sub-tab active" onclick="switchSubTab('growth','skills',this)">SKILLS</button>
+        <button class="sub-tab" onclick="switchSubTab('growth','stats',this)">STATS</button>
+        <button class="sub-tab" onclick="switchSubTab('growth','streaks',this)">STREAKS</button>
+        <button class="sub-tab" onclick="switchSubTab('growth','report',this)">REPORT</button>
+      </div>
+      <div class="page-content">
+        <div id="growth-skills-tab">
+          <div class="sec-hdr"><div class="sec-title">ACTIVE SKILLS</div></div>
+          <div class="skills-grid" id="skills-grid"></div>
+          <div class="sec-hdr" style="margin-top:18px"><div class="sec-title">🔒 MONITORED BY AEON</div></div>
+          <div class="skills-grid">
+            <div class="hidden-skill"><div class="hidden-icon">❓</div><div class="hidden-lbl">UNKNOWN</div></div>
+            <div class="hidden-skill"><div class="hidden-icon">❓</div><div class="hidden-lbl">UNKNOWN</div></div>
+            <div class="hidden-skill"><div class="hidden-icon">❓</div><div class="hidden-lbl">UNKNOWN</div></div>
+          </div>
+        </div>
+        <div id="growth-stats-tab" style="display:none">
+          <div id="stats-bars"></div>
+        </div>
+        <div id="growth-streaks-tab" style="display:none">
+          <div id="streaks-panel"></div>
+        </div>
+        <div id="growth-report-tab" style="display:none">
+          <div id="report-content">
+            <div style="text-align:center;padding:36px 20px">
+              <div style="font-size:34px;margin-bottom:14px">📊</div>
+              <div style="font-family:'Cinzel',serif;font-size:15px;color:#fff;margin-bottom:7px">Weekly Report</div>
+              <div style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--text-dim);margin-bottom:20px">AEON compiles your full week into one honest analysis.</div>
+              <button class="btn" style="font-size:11px;padding:12px 28px" onclick="generateWeeklyReport()">GENERATE REPORT →</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- KNOWLEDGE PAGE -->
+    <div class="page" id="page-knowledge">
+      <div class="sub-tabs">
+        <button class="sub-tab active" onclick="switchSubTab('knowledge','videos',this)">📺 LEARNING PATH</button>
+        <button class="sub-tab" onclick="switchSubTab('knowledge','books',this)">📚 BOOKS</button>
+        <button class="sub-tab" onclick="switchSubTab('knowledge','finance',this)">◈ FINANCE</button>
+      </div>
+      <div class="page-content">
+        <div id="knowledge-videos-tab">
+          <div id="learn-loading" style="display:none;text-align:center;padding:32px 0;font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--accent)">AEON BUILDING LEARNING PATH <span class="ld"><span></span><span></span><span></span></span></div>
+          <div id="video-path-content"></div>
+        </div>
+        <div id="knowledge-books-tab" style="display:none">
+          <div id="book-recommendations"></div>
+          <div class="sec-hdr" style="margin-top:18px"><div class="sec-title">ADD BOOK TO TRACKER</div></div>
+          <div class="journal-panel" style="margin-bottom:10px">
+            <div style="display:grid;gap:7px">
+              <input class="q-input-field" id="book-title-input" placeholder="Book title">
+              <input class="q-input-field" id="book-author-input" placeholder="Author">
+              <input class="q-input-field" id="book-pages-input" type="number" placeholder="Total pages">
+              <input type="file" id="book-upload" accept=".pdf" style="display:none" onchange="handleBookUpload(event)">
+              <button class="btn-ghost" style="font-size:10px;padding:9px" onclick="document.getElementById('book-upload').click()">📎 ATTACH PDF (OPTIONAL)</button>
+              <button class="btn" style="font-size:10px;padding:10px" onclick="addBook()">ADD TO TRACKER →</button>
+            </div>
+          </div>
+          <div id="active-books"></div>
+        </div>
+        <div id="knowledge-finance-tab" style="display:none">
+          <div class="fin-summary" id="fin-summary">
+            <div class="fin-cell"><div class="fin-cell-lbl">MONTHLY INCOME</div><div class="fin-cell-val" id="fin-income" style="color:var(--freq-green)">0</div></div>
+            <div class="fin-cell"><div class="fin-cell-lbl">EXPENSES</div><div class="fin-cell-val" id="fin-expenses" style="color:var(--freq-red)">0</div></div>
+            <div class="fin-cell"><div class="fin-cell-lbl">NET BALANCE</div><div class="fin-cell-val" id="fin-net">0</div></div>
+            <div class="fin-cell"><div class="fin-cell-lbl">SAVINGS RATE</div><div class="fin-cell-val" id="fin-savings-rate" style="color:var(--accent2)">0%</div></div>
+          </div>
+          <div class="journal-panel" style="margin-bottom:10px">
+            <div class="jp-label">LOG TRANSACTION</div>
+            <div style="display:grid;gap:7px">
+              <input class="q-input-field" id="fin-desc" placeholder="Description">
+              <input class="q-input-field" id="fin-amount" type="number" placeholder="Amount (negative = expense)">
+              <select class="q-input-field" id="fin-category">
+                <option value="income">Income</option>
+                <option value="food">Food</option>
+                <option value="transport">Transport</option>
+                <option value="education">Education</option>
+                <option value="health">Health</option>
+                <option value="entertainment">Entertainment</option>
+                <option value="savings">Savings</option>
+                <option value="investment">Investment</option>
+                <option value="other">Other</option>
+              </select>
+              <button class="btn" style="font-size:10px;padding:10px" onclick="addTransaction()">LOG ENTRY</button>
+            </div>
+          </div>
+          <div id="fin-aeon-insight" style="margin-bottom:10px"></div>
+          <div class="sec-hdr">
+            <div class="sec-title">TRANSACTION HISTORY</div>
+            <button onclick="getFinancialInsight()" style="background:transparent;border:1px solid var(--accent);color:var(--accent);font-family:'Rajdhani',sans-serif;font-size:9px;font-weight:700;letter-spacing:0.15em;padding:4px 10px;cursor:pointer">AEON ANALYSE</button>
+          </div>
+          <div id="fin-transactions"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SHOP PAGE -->
+    <div class="page" id="page-shop">
+      <div class="page-content">
+        <div style="display:flex;align-items:center;justify-content:space-between;background:rgba(8,6,20,0.97);border:1px solid var(--border);padding:13px 15px;margin-bottom:14px">
+          <div style="font-family:'Cinzel',serif;font-size:15px;color:#fff">⚡ SOLAR EXCHANGE</div>
+          <div style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--gold)">◈ <span id="shop-balance">0</span></div>
+        </div>
+        <div class="shop-grid" id="shop-grid"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== AI ENGINE =====
+// Frontend calls /api/chat ONLY — no keys, no direct AI calls
+let activeEngine = 'claude'; // updated from server response
+
+async function callAEON({ system='', messages=[], maxTokens=1000 }) {
+  let data;
+  try {
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ system, messages, maxTokens })
+    });
+
+    if (!res.ok) throw new Error(`Backend ${res.status}`);
+    data = await res.json();
+  } catch(e) {
+    // Network failure — surface gracefully, never throw to callers
+    console.error('[AEON] Backend unreachable:', e.message);
+    addLog('penalty', 'AEON channel is unreachable. Check connection.');
+    return '';
+  }
+
+  // Update status dot based on which engine the backend used
+  if (data.engine && data.engine !== activeEngine) {
+    activeEngine = data.engine;
+    setAPIDot(data.engine, data.fallback || false);
+    if (data.fallback) {
+      addLog('mission', 'Primary channel at capacity. <span>AEON flowing through Gemini.</span>');
+    }
+  }
+
+  // Both engines failed — backend still returns 200 with error flag
+  if (data.error && !data.text) {
+    addLog('penalty', 'AEON is temporarily unreachable. The System will return.');
+    return '';
+  }
+
+  return data.text || '';
+}
+
+function setAPIDot(engine, isFallback=false) {
+  const dot = document.getElementById('api-dot');
+  const txt = document.getElementById('api-status-text');
+  if (!dot) return;
+  if (engine === 'claude') {
+    dot.style.background = 'var(--freq-green)';
+    dot.style.boxShadow = '0 0 5px var(--freq-green)';
+    if (txt) txt.textContent = 'AEON ONLINE';
+  } else if (engine === 'gemini') {
+    dot.style.background = 'var(--freq-yellow)';
+    dot.style.boxShadow = '0 0 5px var(--freq-yellow)';
+    if (txt) txt.textContent = 'AEON GEMINI';
+  } else {
+    dot.style.background = 'var(--freq-red)';
+    dot.style.boxShadow = '0 0 5px var(--freq-red)';
+    if (txt) txt.textContent = 'AEON OFFLINE';
+  }
+}
+
+// ===== STATE =====
+const state = {
+  onboardStep:0, onboardAnswers:{},
+  hunterName:'Hunter', rank:'C', level:1, xp:0, xpMax:300,
+  solars:0, title:'The Awakened', frequency:'ALIGNED',
+  stats:{}, missions:[], nonNeg:[], skills:[],
+  chatHistory:[], systemLog:[], journalEntries:[],
+  aeonMessage:'', blockages:[],
+  goals:null, goalsLoaded:false,
+  transactions:[], streakData:{}, books:[],
+  categoryPlan:null, learnData:null, learnLoaded:false,
+  activePopupQuest:null, pillarsData:null, pillarsLoaded:false,
+  streakShields:{},
+};
+
+// ===== VOICE =====
+let voiceEnabled=false, mediaRec=null, recTarget=null;
+const SpeechRecognition = window.SpeechRecognition||window.webkitSpeechRecognition;
+let recognition = SpeechRecognition ? new SpeechRecognition() : null;
+if(recognition){ recognition.continuous=false; recognition.interimResults=false; recognition.lang='en-US'; }
+
+function toggleVoice(){ voiceEnabled=!voiceEnabled; const b=document.getElementById('voice-toggle-btn'); if(b) b.textContent=voiceEnabled?'🔊 VOICE ON':'🔇 VOICE OFF'; showToast(voiceEnabled?'AEON voice activated.':'AEON voice silenced.'); }
+
+function speakAEON(text){ if(!voiceEnabled||!window.speechSynthesis) return; window.speechSynthesis.cancel(); const clean=text.replace(/<[^>]*>/g,'').replace(/[⚡◈▸⚔️🔮📓]/g,'').trim(); const u=new SpeechSynthesisUtterance(clean); const v=window.speechSynthesis.getVoices().find(v=>v.name.includes('Daniel')||v.name.includes('Google UK English Male')||v.lang==='en-GB'); if(v) u.voice=v; u.rate=0.82; u.pitch=0.72; u.volume=1; window.speechSynthesis.speak(u); }
+
+function toggleVoiceInput(target) {
+  if(!recognition){ showToast('Voice input not supported on this browser.'); return; }
+  recTarget=target;
+  const btn=document.getElementById(target==='chat'?'chat-voice-btn':'journal-voice-btn-'+target);
+  if(recognition.running){ recognition.stop(); return; }
+  recognition.start(); recognition.running=true;
+  if(btn) btn.classList.add('recording');
+  recognition.onresult=e=>{ const t=e.results[0][0].transcript; if(target==='chat'){ const inp=document.getElementById('chat-input'); if(inp) inp.value=t; } else if(target==='quick'){ const inp=document.getElementById('quick-log-input'); if(inp) inp.value+=t+' '; } else { const inp=document.getElementById('jp-'+target); if(inp) inp.value+=t+' '; } recognition.running=false; if(btn) btn.classList.remove('recording'); };
+  recognition.onerror=()=>{ recognition.running=false; if(btn) btn.classList.remove('recording'); };
+  recognition.onend=()=>{ recognition.running=false; if(btn) btn.classList.remove('recording'); };
+}
+
+// ===== NAVIGATION =====
+function showScreen(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById(id)?.classList.add('active'); }
+function showMainLayout(){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById('main-layout').classList.add('active'); }
+
+function openSidebar(){ document.getElementById('sidebar').classList.add('open'); document.getElementById('sb-overlay').classList.add('open'); }
+function closeSidebar(){ document.getElementById('sidebar').classList.remove('open'); document.getElementById('sb-overlay').classList.remove('open'); }
+
+function navigateTo(page, el) {
+  closeSidebar();
+  document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('active'));
+  if(el) el.classList.add('active');
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+page)?.classList.add('active');
+  const titles={dashboard:'DASHBOARD',aeon:'AEON',journal:'JOURNAL',missions:'MISSION HUB',growth:'SKILLS & GROWTH',knowledge:'KNOWLEDGE',shop:'SOLAR EXCHANGE'};
+  document.getElementById('tb-title').textContent=titles[page]||page.toUpperCase();
+  if(page==='missions'){ checkMilestones(); }
+  if(page==='growth'){ renderSkills(); renderStatBars(); renderStreaks(); }
+  if(page==='knowledge'){ loadLearnTab(); }
+}
+
+function switchSubTab(page, tab, el) {
+  const wrap=el?.closest('.page');
+  if(wrap) wrap.querySelectorAll('.sub-tab').forEach(t=>t.classList.remove('active'));
+  if(el) el.classList.add('active');
+  document.querySelectorAll(`[id^="${page}-"][id$="-tab"]`).forEach(t=>t.style.display='none');
+  const target=document.getElementById(`${page}-${tab}-tab`);
+  if(target) target.style.display='block';
+  if(page==='missions'&&tab==='mbs') loadPillarsTab();
+  if(page==='missions'&&tab==='goals') loadGoalsTab();
+  if(page==='missions'&&tab==='side') renderSideQuests();
+  if(page==='missions'&&tab==='milestones') renderMilestones();
+  if(page==='growth'&&tab==='stats') renderStatBars();
+  if(page==='growth'&&tab==='streaks') renderStreaks();
+  if(page==='growth'&&tab==='report') {}
+  if(page==='knowledge'&&tab==='books') renderBookRecommendations();
+  if(page==='knowledge'&&tab==='finance') renderFinance();
+}
+
+// ===== ONBOARDING =====
+const onboardQuestions = [
+  {id:'name',label:'QUESTION 01 / 12',text:'What is your name? AEON will carry it through every corner of your journey.',type:'text',placeholder:'Your name...'},
+  {id:'mainGoal',label:'QUESTION 02 / 12',text:'Describe the life you are building — fully. What does it look like, feel like, smell like? What has changed? Who are you when you get there? Leave nothing out.',type:'textarea',placeholder:'Pour it all out. AEON needs the full picture, not just the headline...'},
+  {id:'whyGoal',label:'QUESTION 03 / 12',text:'Why does this matter at the deepest level? Not the surface reason — the real one. What breaks inside you if you never build this life?',type:'textarea',placeholder:'Go beneath the surface. The real why is what AEON will use to keep you moving when nothing else will...'},
+  {id:'currentState',label:'QUESTION 04 / 12',text:'Be brutally honest. Where are you standing right now — not where you hope to be?',type:'options',options:['Starting from zero — lost and rebuilding','Moving but scattered — potential going to waste','Consistent but stuck — hitting a ceiling','Already in motion — need precision and accountability']},
+  {id:'mentalState',label:'QUESTION 05 / 12',text:'What is actually happening inside your mind right now? What thoughts repeat? What emotions do you carry through most of your days?',type:'textarea',placeholder:'AEON does not judge. Are you anxious, angry, numb, hopeful, scattered, heavy? What is the truth of your inner world?'},
+  {id:'blockages',label:'QUESTION 06 / 12',text:'Where do you feel blocked — the places in life where something invisible keeps pushing back?',type:'multi',options:['Money & Financial Abundance','Self-Worth & Confidence','Romantic & Deep Relationships','Health & Physical Vitality','Spiritual Connection & Purpose','Career & Professional Mastery','Social Life & Belonging','Mental Clarity & Focus','Family Dynamics','Creative Expression & Voice']},
+  {id:'domains',label:'QUESTION 07 / 12',text:'Which life domains should AEON actively develop and hold you accountable in?',type:'multi',options:['Health & Fitness','Mental Discipline','Finances & Career','Relationships','Spirituality','Education & Skills','Creativity','Emotional Mastery']},
+  {id:'habits',label:'QUESTION 08 / 12',text:'Walk AEON through your actual days — both the habits that serve you and the ones that don\'t. Be specific and honest.',type:'textarea',placeholder:'e.g. I wake up around 9, scroll for an hour, start work at 11 but get distracted, eat inconsistently, sleep after 1am...'},
+  {id:'biggestWeak',label:'QUESTION 09 / 12',text:'What single pattern has cost you the most? The one thing that keeps showing up, again and again, between you and what you want.',type:'options',options:['Consistency — I begin strong then abandon','Fear & paralysis — I plan endlessly but never move','Comfort over discipline — I know what to do but choose ease','Self-sabotage — I get close then destroy it myself','Clarity — I genuinely don\'t know who I am yet','Environment — the people and world around me pull me off course']},
+  {id:'spirituality',label:'QUESTION 10 / 12',text:'How does the spiritual dimension fit into your life? AEON holds Mind, Body, and Spirit as one integrated system.',type:'options',options:['Deeply spiritual — it is my foundation','I believe but my practice is inconsistent','I am open but have not yet developed it','I am not spiritual but open to exploring it','I do not see spirituality as relevant to my path']},
+  {id:'dailyFreeTime',label:'QUESTION 11 / 12',text:'How many hours each day can you honestly and realistically commit — not what you wish you had, but what you actually have?',type:'options',options:['1–2 hours (tight life, tight schedule)','2–4 hours (some space, real commitment possible)','4–6 hours (serious, this matters to me)','6+ hours (all in, this is the mission)']},
+  {id:'country',label:'QUESTION 12 / 12',text:'Which country are you in? AEON calibrates rewards and timing to your world.\n\nThen — make your declaration. Write who you are becoming as if it is already true. Speak it into the System.',type:'textarea',placeholder:'Country: [your country]\n\nDeclaration: I am...'}
+];
+
+let multiSelected=[];
+
+function startOnboarding(){ showScreen('onboarding'); renderQuestion(); }
+
+function renderQuestion(){
+  const q=onboardQuestions[state.onboardStep];
+  document.getElementById('q-label').textContent=q.label;
+  document.getElementById('q-text').textContent=q.text;
+  document.getElementById('progress-fill').style.width=((state.onboardStep/onboardQuestions.length)*100)+'%';
+  document.getElementById('btn-back').style.visibility=state.onboardStep>0?'visible':'hidden';
+  document.getElementById('btn-next').textContent=state.onboardStep===onboardQuestions.length-1?'COMPLETE ASSESSMENT →':'NEXT →';
+  multiSelected=Array.isArray(state.onboardAnswers[q.id])?[...state.onboardAnswers[q.id]]:[];
+  const area=document.getElementById('q-answer-area');
+  if(q.type==='text') area.innerHTML=`<input class="q-input" id="q-inp" type="text" placeholder="${q.placeholder}" value="${state.onboardAnswers[q.id]||''}">`;
+  else if(q.type==='textarea') area.innerHTML=`<textarea class="q-input" id="q-inp" rows="5" placeholder="${q.placeholder}">${state.onboardAnswers[q.id]||''}</textarea>`;
+  else if(q.type==='options') area.innerHTML=`<div class="q-opts">${q.options.map(o=>`<button class="q-opt${state.onboardAnswers[q.id]===o?' sel':''}" onclick="selectOpt(this,'${q.id}','${o.replace(/'/g,"\\'")}',false)">${o}</button>`).join('')}</div>`;
+  else if(q.type==='multi') area.innerHTML=`<div style="font-size:10px;color:var(--text-dim);letter-spacing:0.1em;margin-bottom:7px">SELECT ALL THAT APPLY</div><div class="q-opts">${q.options.map(o=>`<button class="q-opt${multiSelected.includes(o)?' sel':''}" onclick="selectOpt(this,'${q.id}','${o}',true)">${o}</button>`).join('')}</div>`;
+}
+
+function selectOpt(el,qid,val,multi){
+  if(multi){ multiSelected.includes(val)?(multiSelected=multiSelected.filter(v=>v!==val),el.classList.remove('sel')):(multiSelected.push(val),el.classList.add('sel')); state.onboardAnswers[qid]=[...multiSelected]; }
+  else{ document.querySelectorAll('.q-opt').forEach(b=>b.classList.remove('sel')); el.classList.add('sel'); state.onboardAnswers[qid]=val; }
+}
+
+function nextQuestion(){
+  const q=onboardQuestions[state.onboardStep];
+  if(q.type==='text'||q.type==='textarea'){ const v=document.getElementById('q-inp').value.trim(); if(!v){showToast('AEON needs your answer.');return;} state.onboardAnswers[q.id]=v; }
+  else if(q.type==='options'&&!state.onboardAnswers[q.id]){showToast('Choose an option.');return;}
+  else if(q.type==='multi'&&!multiSelected.length){showToast('Select at least one.');return;}
+  if(state.onboardStep<onboardQuestions.length-1){state.onboardStep++;renderQuestion();}
+  else runAnalysis();
+}
+function prevQuestion(){ if(state.onboardStep>0){state.onboardStep--;renderQuestion();} }
+
+// ===== ANALYSIS =====
+async function runAnalysis(){
+  showScreen('analysis');
+  const log=document.getElementById('analysis-log'); log.innerHTML='';
+  const lines=[
+    {t:`> SYSTEM AWAKENING...`,c:'',d:0},{t:`> IDENTITY REGISTERED: ${state.onboardAnswers.name.toUpperCase()}`,c:'b',d:700},
+    {t:'> SCANNING DECLARATION...',c:'',d:1400},{t:'> MAPPING LIFE DOMAINS...',c:'',d:2000},
+    {t:'> CALCULATING BASELINE STATS...',c:'',d:2700},{t:'> DETECTING HIDDEN SKILL SIGNATURES...',c:'p',d:3400},
+    {t:'> ANALYSING BLOCKAGE PATTERNS...',c:'',d:4100},{t:'> ASSIGNING RANK...',c:'',d:4800},
+    {t:'> RANK DETERMINATION COMPLETE.',c:'g',d:5500},{t:'> CRAFTING YOUR TITLE...',c:'',d:6000},
+    {t:'> HUNTER PROFILE LOCKED AND SEALED.',c:'gold',d:6700},
+  ];
+  lines.forEach(({t,c,d})=>setTimeout(()=>{ const el=document.createElement('div'); el.className=`log-l ${c}`; el.textContent=t; log.appendChild(el); log.scrollTop=log.scrollHeight; },d));
+  setTimeout(async()=>{
+    document.getElementById('analysis-btn-area').innerHTML=`<div style="text-align:center;font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--accent)">AEON IS READING YOUR SOUL <span class="ld"><span></span><span></span><span></span></span></div>`;
+    try{ await processWithAEON(); }catch(e){ assignDefaultProfile(); }
+    document.getElementById('analysis-btn-area').innerHTML=`<button class="btn" style="width:100%" onclick="showRankCeremony()">RECEIVE YOUR ASSESSMENT →</button>`;
+  },7500);
+}
+
+async function processWithAEON(){
+  const a=state.onboardAnswers;
+  const prompt=`You are AEON — a wise, ancient intelligence, part sage, part monk, part warrior guide. You speak with warmth, depth, and absolute honesty. You see through people and into them. You are like the wisest mentor a person could ever have.
+
+Analyse this seeker's full assessment and build their complete profile. Return ONLY valid JSON, no markdown.
+
+{
+  "rank":"E/D/C/B/A/S",
+  "level":1-20,
+  "title":"unique 3-5 word title (e.g. 'The Sovereign in Waiting')",
+  "stats":{"Discipline":10-90,"Mindset":10-90,"Vitality":10-90,"Ambition":10-90,"Adaptability":10-90,"Focus":10-90,"Spiritual":10-90,"Emotional":10-90},
+  "initialSkills":[{"name":"skill","icon":"emoji","rank":"Beginner/Apprentice/Adept","progress":10-40,"rarity":"common/uncommon/rare"}],
+  "missions":[{"name":"specific mission","difficulty":"easy/normal/hard","xp":40-200,"solar":20-100,"reason":"exactly why this connects to their goal"}],
+  "nonNeg":["specific non-negotiable 1","specific non-negotiable 2","specific non-negotiable 3"],
+  "blockages":[{"area":"area name","description":"what AEON perceives about this blockage","remedy":"concrete specific action"}],
+  "milestones":[{"id":1,"title":"milestone","description":"what achieving this requires — specific","timeframe":"Week 1-2","status":"active","progress":0,"xpReward":200,"solarReward":100,"checkType":"auto/input/streak","checkCondition":"what triggers AEON to unlock this (e.g. complete non-negotiables 3 days, or write your financial plan)","inputPrompt":"if checkType=input, the question to show"}],
+  "sideQuests":[{"id":1,"title":"side quest","description":"what to do","tangibleBenefit":"the specific visible real-world benefit","xpReward":120,"solarReward":60,"difficulty":"easy/normal/hard","accepted":false,"done":false}],
+  "aeonMessage":"A deeply human, warm but honest message from AEON to this specific person. Reference their actual declaration and their specific fears or blocks. Sound like a sage who truly sees them. 3-5 sentences.",
+  "goalAffirmation":"A powerful 1-2 sentence synthesis of their main goal written as a present-tense declaration — as if AEON is confirming who they already are.",
+  "frequency":"ALIGNED/ELEVATED/COASTING/SLIPPING",
+  "mentalPillar":"STRONG/MODERATE/DEVELOPING",
+  "physicalPillar":"STRONG/MODERATE/DEVELOPING",
+  "spiritualPillar":"STRONG/MODERATE/DEVELOPING"
+}
+
+SEEKER DATA:
+Name: ${a.name} | Goal: ${a.mainGoal} | Why: ${a.whyGoal||''} | State: ${a.currentState}
+Inner world: ${a.mentalState||''} | Blockages: ${JSON.stringify(a.blockages||[])}
+Domains: ${JSON.stringify(a.domains||[])} | Habits: ${a.habits||''}
+Core weakness: ${a.biggestWeak} | Spirituality: ${a.spirituality||''} | Time: ${a.dailyFreeTime}
+Country/Declaration: ${a.country||''}
+
+milestones must be 5-7 sequential steps. checkType options: "auto" (AEON checks behaviour), "input" (user must write something), "streak" (requires N consecutive days of something). Return ONLY JSON.`;
+
+  const text=await callAEON({messages:[{role:'user',content:prompt}],maxTokens:2000});
+  applyProfile(JSON.parse(text.replace(/```json|```/g,'').trim()));
+}
+
+function applyProfile(p){
+  state.rank=p.rank; state.level=p.level; state.title=p.title;
+  state.hunterName=state.onboardAnswers.name;
+  state.stats=p.stats||{}; state.frequency=p.frequency||'ALIGNED';
+  state.missions=(p.missions||[]).map((m,i)=>({...m,id:i,done:false}));
+  state.nonNeg=(p.nonNeg||[]).map((n,i)=>({name:n,id:i,done:false}));
+  state.skills=(p.initialSkills||[]).map((s,i)=>({...s,id:i}));
+  state.aeonMessage=p.aeonMessage||'';
+  state.goalAffirmation=p.goalAffirmation||state.onboardAnswers.mainGoal;
+  state.blockages=p.blockages||[];
+  state.goals={milestones:p.milestones||[],sideQuests:p.sideQuests||[],masterGoal:p.goalAffirmation||'',subGoals:[]};
+  state.goalsLoaded=true;
+  state.mentalPillar=p.mentalPillar||'DEVELOPING';
+  state.physicalPillar=p.physicalPillar||'DEVELOPING';
+  state.spiritualPillar=p.spiritualPillar||'DEVELOPING';
+  const xpBases={E:100,D:200,C:350,B:500,A:800,S:1200};
+  state.xpMax=xpBases[state.rank]||350; state.xp=Math.floor(state.xpMax*0.1);
+  addLog('rank',`AEON has assigned rank <span>${state.rank}-RANK</span> to Hunter <span>${state.hunterName}</span>.`);
+  addLog('unlock',`Title bestowed: <span>${state.title}</span>`);
+  if(state.blockages.length) addLog('unlock',`AEON has identified <span>${state.blockages.length} blockage(s)</span>.`);
+}
+
+function assignDefaultProfile(){
+  applyProfile({rank:'D',level:2,title:'The Seeker Awakening',stats:{Discipline:35,Mindset:40,Vitality:30,Ambition:65,Adaptability:38,Focus:35,Spiritual:28,Emotional:32},frequency:'ALIGNED',initialSkills:[{name:'Determination',icon:'🔥',rank:'Beginner',progress:20,rarity:'common'},{name:'Vision',icon:'👁️',rank:'Beginner',progress:15,rarity:'uncommon'}],missions:[{name:'Morning Ritual (20 min)',difficulty:'easy',xp:50,solar:25,reason:'Anchors your day before the world takes it'},{name:'Deep Focus Session (90 min)',difficulty:'normal',xp:120,solar:60,reason:'The work that builds your actual goal'},{name:'Physical Movement (30 min)',difficulty:'normal',xp:80,solar:40,reason:'The body is the vessel — honour it'},{name:'Evening Journal',difficulty:'easy',xp:40,solar:20,reason:'AEON needs your daily account'}],nonNeg:['No scrolling for the first hour of the day','Minimum 7 hours of sleep','One genuine act of learning daily'],blockages:[{area:'Consistency',description:'The pattern AEON detects is that beginnings come easily but the thread breaks.',remedy:'Start so small it feels almost too easy. Build the identity first, then the volume.'}],milestones:[{id:1,title:'The First Declaration',description:'Write clearly what success looks like in 90 days — specific, measurable, real.',timeframe:'Week 1',status:'active',progress:0,xpReward:150,solarReward:75,checkType:'input',checkCondition:'User defines their 90-day success vision',inputPrompt:'What does success look like in 90 days? Be as specific as possible.'},{id:2,title:'Seven Days of Showing Up',description:'Complete your non-negotiables for 7 consecutive days.',timeframe:'Week 2-3',status:'locked',progress:0,xpReward:300,solarReward:150,checkType:'streak',checkCondition:'Complete non-negotiables for 7 days straight'},{id:3,title:'First Tangible Result',description:'Achieve one real, measurable result tied directly to your goal.',timeframe:'Week 4-6',status:'locked',progress:0,xpReward:500,solarReward:250,checkType:'input',checkCondition:'User documents their first real result',inputPrompt:'Describe the first real result you have achieved toward your goal.'}],sideQuests:[{id:1,title:'The Deep Read',description:'Find and read one long-form article or watch one documentary directly about your goal area.',tangibleBenefit:'A single insight from the right source can compress months of wrong direction into one moment of clarity.',xpReward:80,solarReward:40,difficulty:'easy',accepted:false,done:false}],aeonMessage:`${state.onboardAnswers.name||'Seeker'}, I have read everything you wrote — between the lines as much as within them. What you carry is real. And so is what you are capable of. The System does not offer comfort. It offers truth and a path. Begin.`,goalAffirmation:'I am building a life of complete freedom, abundance, and purpose — and every action I take today is proof of who I already am.',frequency:'ALIGNED',mentalPillar:'DEVELOPING',physicalPillar:'DEVELOPING',spiritualPillar:'DEVELOPING'});
+}
+
+function showRankCeremony(){
+  showScreen('rankup');
+  document.getElementById('ceremony-rank').textContent=state.rank;
+  document.getElementById('ceremony-title').textContent=state.title;
+  document.getElementById('ceremony-stats').innerHTML=Object.entries(state.stats).slice(0,8).map(([k,v])=>`<div class="stat-cell"><div class="stat-cell-val">${v}</div><div class="stat-cell-name">${k.substring(0,4).toUpperCase()}</div></div>`).join('');
+}
+
+function enterDashboard(){
+  showScreen('rankup');
+  setTimeout(()=>{
+    showMainLayout();
+    buildDashboard();
+    addChatMsg('aeon', state.aeonMessage||`${state.hunterName}. The System has seen you. Your path is now set in motion. I will be with you every step — not as a comfort, but as a mirror. Let us begin.`);
+    setTimeout(()=>showAffirmation(),600);
+    setTimeout(()=>buildCategoryPlan(),4000);
+    startSystemClock();
+  },300);
+}
+
+// ===== DASHBOARD BUILD =====
+const freqMap={
+  CRISIS:{color:'var(--freq-red)',label:'CRISIS',desc:'You have drifted far. Return.',orb:'🔴',emo:{l:'Overwhelmed',c:'var(--freq-red)'},men:{l:'Scattered',c:'var(--freq-red)'}},
+  SLIPPING:{color:'var(--freq-orange)',label:'SLIPPING',desc:'Momentum is fading. Recalibrate.',orb:'🟠',emo:{l:'Anxious',c:'var(--freq-orange)'},men:{l:'Unfocused',c:'var(--freq-orange)'}},
+  COASTING:{color:'var(--freq-yellow)',label:'COASTING',desc:'Stable. But not growing.',orb:'🟡',emo:{l:'Neutral',c:'var(--freq-yellow)'},men:{l:'Drifting',c:'var(--freq-yellow)'}},
+  ALIGNED:{color:'var(--freq-green)',label:'ALIGNED',desc:'You are on the path. Keep walking.',orb:'🟢',emo:{l:'Grounded',c:'var(--freq-green)'},men:{l:'Clear',c:'var(--freq-green)'}},
+  ELEVATED:{color:'var(--freq-blue)',label:'ELEVATED',desc:'Sharp. Intentional. Focused.',orb:'🔵',emo:{l:'Driven',c:'var(--freq-blue)'},men:{l:'Focused',c:'var(--freq-blue)'}},
+  PEAK:{color:'var(--freq-purple)',label:'PEAK',desc:'Full alignment. This is rare.',orb:'🟣',emo:{l:'Sovereign',c:'var(--freq-purple)'},men:{l:'Locked In',c:'var(--freq-purple)'}},
+};
+
+function buildDashboard(){
+  // Top bar
+  document.getElementById('tb-rank-name').textContent=`${state.rank}-RANK`;
+  document.getElementById('tb-rank-badge').textContent=state.rank;
+  document.getElementById('tb-level').textContent=`LVL ${state.level}`;
+  document.getElementById('tb-solars').textContent=state.solars.toLocaleString();
+  document.getElementById('sb-hunter-name').textContent=state.hunterName;
+  // Dashboard
+  document.getElementById('dash-name').textContent=state.hunterName;
+  document.getElementById('dash-title').textContent=state.title;
+  document.getElementById('dash-xp-fill').style.width=((state.xp/state.xpMax)*100)+'%';
+  document.getElementById('dash-xp-lbl').textContent=`${state.xp}/${state.xpMax}`;
+  document.getElementById('dash-rank').textContent=state.rank;
+  document.getElementById('dash-solars').textContent=state.solars.toLocaleString();
+  document.getElementById('dash-goal-affirm').textContent=state.goalAffirmation||state.onboardAnswers?.mainGoal||'Your mission is being forged.';
+  setFrequency(state.frequency);
+  renderDashStats();
+  renderMissions(); renderNonNeg(); renderShop();
+  updateDashBook();
+}
+
+function setFrequency(freq){
+  const f=freqMap[freq]||freqMap.ALIGNED; state.frequency=freq;
+  const fs=document.getElementById('dash-freq-state'),fd=document.getElementById('dash-freq-desc'),fo=document.getElementById('dash-freq-orb'),ftd=document.getElementById('tb-freq-dot');
+  if(fs){fs.style.color=f.color;fs.textContent=f.label;}
+  if(fd) fd.textContent=f.desc;
+  if(fo){fo.textContent=f.orb;fo.style.color=f.color;}
+  if(ftd){ftd.style.color=f.color;ftd.style.background=f.color;}
+  const ed=document.getElementById('emo-dot'),el=document.getElementById('emo-label');
+  if(ed){ed.style.color=f.emo.c;ed.style.background=f.emo.c;}
+  if(el){el.textContent=f.emo.l;el.style.color=f.emo.c;}
+  const md=document.getElementById('men-dot'),ml=document.getElementById('men-label');
+  if(md){md.style.color=f.men.c;md.style.background=f.men.c;}
+  if(ml){ml.textContent=f.men.l;ml.style.color=f.men.c;}
+}
+
+function renderDashStats(){
+  const el=document.getElementById('dash-stats-mini');
+  if(!el) return;
+  const entries=Object.entries(state.stats).slice(0,8);
+  el.innerHTML=entries.map(([k,v])=>`<div class="stat-mini-cell"><div class="smc-val">${v}</div><div class="smc-name">${k.substring(0,4).toUpperCase()}</div></div>`).join('')||'<div style="color:var(--text-dim);font-size:11px;grid-column:1/-1">Complete onboarding to reveal stats.</div>';
+}
+
+function updateSolars(){ document.getElementById('tb-solars').textContent=state.solars.toLocaleString(); document.getElementById('dash-solars').textContent=state.solars.toLocaleString(); const sb=document.getElementById('shop-balance'); if(sb) sb.textContent=state.solars.toLocaleString(); }
+
+function addXP(amt){ state.xp=Math.min(state.xpMax,state.xp+amt); document.getElementById('dash-xp-fill').style.width=((state.xp/state.xpMax)*100)+'%'; document.getElementById('dash-xp-lbl').textContent=`${state.xp}/${state.xpMax}`; document.getElementById('tb-level').textContent=`LVL ${state.level}`; }
+
+function updateDashBook(){
+  const active=state.books?.find(b=>!b.done);
+  const hud=document.getElementById('dash-book-hud');
+  if(!active||!hud){if(hud) hud.style.display='none'; return;}
+  hud.style.display='block';
+  document.getElementById('dash-book-title').textContent=active.title;
+  const pct=Math.min(100,Math.round((active.currentPage/active.pages)*100));
+  document.getElementById('dash-book-fill').style.width=pct+'%';
+  document.getElementById('dash-book-pct').textContent=pct+'%';
+}
+
+// ===== SYSTEM CLOCK — time awareness =====
+function startSystemClock(){
+  setInterval(()=>{
+    checkNonNegDeadlines();
+    checkSleepHours();
+  }, 60000); // check every minute
+}
+
+function checkNonNegDeadlines(){
+  const now=new Date(), h=now.getHours(), m=now.getMinutes();
+  // If it's 10 PM and non-negs aren't done, warn
+  if(h===22&&m<10){
+    const undone=state.nonNeg.filter(n=>!n.done);
+    if(undone.length>0){ showUrgentOnDash(`⏱ ${undone.length} Non-Negotiable(s) unfinished — 2 hours remain before midnight penalty.`); }
+  }
+  // 5 min specific warning
+  if(h===23&&m>=50){
+    const undone=state.nonNeg.filter(n=>!n.done);
+    if(undone.length>0){ showUrgentOnDash(`🚨 CRITICAL: ${undone.length} Non-Negotiable(s) incomplete. ${60-m} minutes before sanction.`); triggerSystemNotification(`SOVEREIGN: ${undone.length} non-negotiable(s) about to expire!`); }
+  }
+}
+
+function checkSleepHours(){
+  const now=new Date(), h=now.getHours();
+  // Sleeping hours: midnight to 6am — if user is active (app open) warn
+  if(h>=0&&h<6){ const el=document.getElementById('dash-urgent-area'); if(el&&!el.innerHTML){ showUrgentOnDash('⚠ It is past midnight. If this is not intentional, AEON is watching. Rest is part of the system.'); } }
+}
+
+function showUrgentOnDash(text){
+  const el=document.getElementById('dash-urgent-area'); if(!el) return;
+  el.innerHTML=`<div class="urgent-panel"><div class="urgent-tag">⚡ SYSTEM ALERT</div><div class="urgent-text">${text}</div></div>`;
+  setTimeout(()=>{ if(el) el.innerHTML=''; },300000); // clear after 5 min
+}
+
+function triggerSystemNotification(msg){
+  if('Notification' in window&&Notification.permission==='granted'){ new Notification('⚡ SOVEREIGN',{body:msg,icon:''});}
+  else if('Notification' in window&&Notification.permission!=='denied'){ Notification.requestPermission().then(p=>{if(p==='granted') new Notification('⚡ SOVEREIGN',{body:msg});}); }
+}
+
+// ===== MISSIONS =====
+function renderMissions(){
+  const done=state.missions.filter(m=>m.done).length;
+  const cnt=document.getElementById('mission-count'); if(cnt) cnt.textContent=`${done}/${state.missions.length}`;
+  const list=document.getElementById('missions-list'); if(!list) return;
+  list.innerHTML=state.missions.map(m=>`
+    <div class="mission-card ${m.difficulty||'normal'}${m.done?' done':''}">
+      <div class="mc-check" onclick="toggleMission(${m.id})">${m.done?'✓':''}</div>
+      <div class="mc-info">
+        <div class="mc-name">${m.name}</div>
+        <div class="mc-meta">${(m.difficulty||'normal').toUpperCase()} · ${m.reason||'AEON assigned'}</div>
+      </div>
+      <div class="mc-rewards"><div class="mc-xp">+${m.xp} XP</div><div class="mc-sol">◈+${m.solar}</div></div>
+    </div>`).join('')||'<div style="color:var(--text-dim);font-family:\'Share Tech Mono\',monospace;font-size:10px;padding:12px 0">No missions yet. Complete onboarding.</div>';
+}
+
+function toggleMission(id){
+  const m=state.missions.find(m=>m.id===id); if(!m) return;
+  m.done=!m.done;
+  if(m.done){ addXP(m.xp); state.solars+=m.solar; updateSolars(); showToast(`+${m.xp} XP · ◈+${m.solar}`); addLog('mission',`Mission complete: <span>${m.name}</span>.`); recordStreak('mission_'+id,m.name); }
+  else{ state.xp=Math.max(0,state.xp-m.xp); state.solars=Math.max(0,state.solars-m.solar); updateSolars(); }
+  document.getElementById('dash-xp-fill').style.width=((state.xp/state.xpMax)*100)+'%';
+  document.getElementById('dash-xp-lbl').textContent=`${state.xp}/${state.xpMax}`;
+  renderMissions(); checkMilestones();
+}
+
+function renderNonNeg(){
+  const done=state.nonNeg.filter(n=>n.done).length;
+  const cnt=document.getElementById('nn-count'); if(cnt) cnt.textContent=`${done}/${state.nonNeg.length}`;
+  const list=document.getElementById('nn-list'); if(!list) return;
+  list.innerHTML=state.nonNeg.map(n=>`
+    <div class="nn-card${n.done?' done':''}" onclick="toggleNN(${n.id})">
+      <div class="nn-check">${n.done?'✓':'!'}</div>
+      <div class="mc-info">
+        <div class="mc-name">${n.name}</div>
+        <div class="mc-meta" style="color:${n.done?'var(--freq-green)':'var(--freq-red)'}">NON-NEGOTIABLE · ${n.done?'COMPLETE':'REQUIRED'}</div>
+      </div>
+    </div>`).join('')||'<div style="color:var(--text-dim);font-family:\'Share Tech Mono\',monospace;font-size:10px;padding:12px 0">No non-negotiables yet.</div>';
+}
+
+function toggleNN(id){
+  const n=state.nonNeg.find(n=>n.id===id); if(!n) return;
+  n.done=!n.done;
+  if(n.done){ showToast('Non-negotiable completed.'); addLog('mission',`Non-negotiable done: <span>${n.name}</span>.`); recordStreak('nn_'+id,n.name); checkMilestones(); }
+  renderNonNeg();
+}
+
+// ===== SIDE QUESTS =====
+function renderSideQuests(){
+  const list=document.getElementById('side-quests-list'); if(!list) return;
+  const sqs=state.goals?.sideQuests||[];
+  if(!sqs.length){list.innerHTML='<div style="color:var(--text-dim);font-family:\'Share Tech Mono\',monospace;font-size:10px;padding:12px 0">Complete onboarding to load side quests.</div>';return;}
+  list.innerHTML=sqs.map(sq=>`
+    <div class="sq-card">
+      <div class="sq-tag">⭐ SIDE QUEST · ${sq.difficulty?.toUpperCase()||'NORMAL'} · OPTIONAL</div>
+      <div class="sq-name">${sq.title}</div>
+      <div class="sq-benefit">WHY DO THIS: ${sq.tangibleBenefit}</div>
+      <div class="sq-desc">${sq.description}</div>
+      <div class="sq-foot">
+        <div class="sq-rewards-row"><span>XP +${sq.xpReward}</span><span>◈+${sq.solarReward}</span></div>
+        <div>
+          ${!sq.accepted&&!sq.done?`<button class="btn-ghost" style="font-size:9px;padding:5px 10px" onclick="acceptSideQuest(${sq.id})">ACCEPT →</button>`:''}
+          ${sq.accepted&&!sq.done?`<button class="btn-ghost btn-green" style="font-size:9px;padding:5px 10px" onclick="completeSideQuest(${sq.id})">MARK DONE ✓</button>`:''}
+          ${sq.done?`<span style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--freq-green)">COMPLETED ✓</span>`:''}
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function acceptSideQuest(id){ const sq=state.goals?.sideQuests?.find(s=>s.id===id); if(!sq) return; sq.accepted=true; addLog('mission',`Side quest accepted: <span>${sq.title}</span>.`); showToast('Side quest accepted.'); renderSideQuests(); }
+function completeSideQuest(id){ const sq=state.goals?.sideQuests?.find(s=>s.id===id); if(!sq) return; sq.done=true; addXP(sq.xpReward); state.solars+=sq.solarReward; updateSolars(); addLog('reward',`Side quest done: <span>${sq.title}</span>. +${sq.xpReward} XP.`); showToast(`Done! +${sq.xpReward} XP · ◈+${sq.solarReward}`); renderSideQuests(); }
+
+// ===== MILESTONES — AEON CONTROLLED =====
+function renderMilestones(){
+  const list=document.getElementById('milestones-list'); if(!list) return;
+  const ms=state.goals?.milestones||[];
+  if(!ms.length){list.innerHTML='<div style="color:var(--text-dim);font-family:\'Share Tech Mono\',monospace;font-size:10px;padding:12px 0">Complete onboarding to load milestone roadmap.</div>';return;}
+  const done=ms.filter(m=>m.status==='completed').length;
+  const cnt=document.getElementById('milestone-count'); if(cnt) cnt.textContent=`${done}/${ms.length}`;
+  list.innerHTML=ms.map(m=>{
+    const showInput=m.status==='active'&&m.checkType==='input'&&!m.inputValue;
+    return `
+    <div class="milestone-item ${m.status}" id="ms-${m.id}">
+      <div class="ms-node">${m.status==='completed'?'✓':m.status==='locked'?'🔒':m.id}</div>
+      <div class="ms-info">
+        <div class="ms-name">${m.title}</div>
+        <div class="ms-timeframe">${m.timeframe||''}</div>
+        <div class="ms-desc">${m.description}</div>
+        ${m.status==='active'?`<div class="ms-aeon-check">AEON monitoring — will unlock automatically when condition is met</div>`:''}
+        ${showInput?`<div class="ms-input-area">
+          <div style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--accent);letter-spacing:0.2em;margin-bottom:5px">AEON REQUIRES YOUR ANSWER</div>
+          <div style="font-size:12px;color:var(--text);margin-bottom:7px">${m.inputPrompt||'Describe your response...'}</div>
+          <textarea class="ms-input" id="ms-input-${m.id}" rows="3" placeholder="Write here..."></textarea>
+          <button class="ms-submit" onclick="submitMilestoneInput(${m.id})">SUBMIT TO AEON →</button>
+        </div>`:''}
+        ${m.inputValue&&m.status==='active'?`<div style="font-size:10px;color:var(--text-dim);margin-top:5px;font-style:italic">Awaiting AEON verification...</div>`:''}
+        <div style="display:flex;justify-content:flex-end;margin-top:5px"><span style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--gold)">+${m.xpReward} XP · ◈+${m.solarReward}</span></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function submitMilestoneInput(id){
+  const ms=state.goals?.milestones?.find(m=>m.id===id); if(!ms) return;
+  const val=document.getElementById(`ms-input-${id}`)?.value?.trim();
+  if(!val){showToast('Write your answer first.');return;}
+  ms.inputValue=val;
+  renderMilestones();
+  // Let AEON evaluate
+  const prompt=`You are AEON. A hunter just submitted their response to the milestone: "${ms.title}".
+Their response: "${val}"
+Their main goal: "${state.onboardAnswers?.mainGoal||'unknown'}"
+
+Is this response genuine, thoughtful, and complete enough to count as achieving this milestone? Answer in 2-3 sentences in your sage/monk voice, then end with either MILESTONE_UNLOCK or MILESTONE_PENDING.`;
+  try{
+    const reply=await callAEON({messages:[{role:'user',content:prompt}]});
+    const unlock=reply.includes('MILESTONE_UNLOCK');
+    const clean=reply.replace('MILESTONE_UNLOCK','').replace('MILESTONE_PENDING','').trim();
+    if(unlock){ unlockMilestone(id,clean); }
+    else{ showToast('AEON: More depth is needed.'); addChatMsg('aeon',clean); }
+  }catch(e){ /* silent */ }
+}
+
+function checkMilestones(){
+  const ms=state.goals?.milestones||[];
+  ms.forEach(m=>{
+    if(m.status!=='active') return;
+    if(m.checkType==='streak'){
+      // Check if the relevant streak has hit the condition number
+      const target=parseInt((m.checkCondition||'').match(/\d+/)?.[0])||3;
+      const streakKey=Object.keys(state.streakData||{}).find(k=>state.streakData[k].count>=target);
+      if(streakKey) unlockMilestone(m.id,`Your consistency has spoken. ${target} consecutive days — AEON has verified this with its own observation.`);
+    }
+    if(m.checkType==='auto'){
+      // Check mission/nonNeg completion rate
+      const mDone=state.missions.filter(x=>x.done).length, mTotal=state.missions.length;
+      if(mTotal>0&&mDone/mTotal>=0.9) unlockMilestone(m.id,'AEON has observed your execution. The standard was met.');
+    }
+  });
+}
+
+function unlockMilestone(id,aeonMsg){
+  const ms=state.goals?.milestones?.find(m=>m.id===id); if(!ms||ms.status==='completed') return;
+  ms.status='completed'; ms.progress=100;
+  // Unlock next
+  const idx=state.goals.milestones.findIndex(m=>m.id===id);
+  if(state.goals.milestones[idx+1]) state.goals.milestones[idx+1].status='active';
+  addXP(ms.xpReward); state.solars+=ms.solarReward; updateSolars();
+  addLog('rank',`Milestone achieved: <span>${ms.title}</span>. +${ms.xpReward} XP, ◈+${ms.solarReward}.`);
+  showToast(`Milestone unlocked! +${ms.xpReward} XP`);
+  if(aeonMsg) addChatMsg('aeon',`${ms.title} — ${aeonMsg}`);
+  speakAEON(aeonMsg||`Milestone ${ms.title} has been unlocked.`);
+  renderMilestones();
+}
+
+// ===== STREAKS =====
+function recordStreak(id,name){
+  if(!state.streakData) state.streakData={};
+  if(!state.streakData[id]) state.streakData[id]={name,count:0,history:[],lastDate:null};
+  const s=state.streakData[id], today=new Date().toDateString();
+  if(s.lastDate===today) return;
+  s.history.push({date:today,done:true}); if(s.history.length>14) s.history.shift();
+  s.count++; s.lastDate=today;
+  checkMilestones();
+}
+
+function renderStreaks(){
+  const el=document.getElementById('streaks-panel'); if(!el) return;
+  if(!state.streakData||!Object.keys(state.streakData).length){el.innerHTML='<div style="color:var(--text-dim);font-family:\'Share Tech Mono\',monospace;font-size:10px;padding:12px 0">Complete missions to build streaks.</div>';return;}
+  el.innerHTML=Object.entries(state.streakData).map(([id,s])=>{
+    const c=s.count||0, cls=c>=7?'hot':c>=3?'warm':'cold';
+    const dots=Array(14).fill(null).map((_,i)=>{ const d=new Date(); d.setDate(d.getDate()-(13-i)); const ds=d.toDateString(); const e=(s.history||[]).find(h=>h.date===ds); return e?'done':(d<=new Date()?'miss':'empty'); });
+    return `<div class="streak-card"><div class="streak-left"><div class="streak-name">${s.name}</div><div class="streak-sub">14-DAY HISTORY</div><div class="streak-dots">${dots.map(c=>`<div class="sdot ${c}"></div>`).join('')}</div></div><div class="streak-right"><div class="streak-num ${cls}">${c}</div><div class="streak-lbl">DAY STREAK</div></div></div>`;
+  }).join('');
+}
+
+// ===== AEON CHAT =====
+function addChatMsg(role,text){
+  const c=document.getElementById('chat-messages'); if(!c) return;
+  const msg=document.createElement('div'); msg.className=`chat-msg ${role}`;
+  msg.innerHTML=`<div class="msg-label">${role==='aeon'?'⚡ AEON':'▸ YOU'}</div><div class="msg-bubble">${text}</div>`;
+  c.appendChild(msg); c.scrollTop=c.scrollHeight;
+  state.chatHistory.push({role:role==='aeon'?'assistant':'user',content:text});
+  if(role==='aeon') speakAEON(text);
+}
+
+async function sendChat(){
+  const inp=document.getElementById('chat-input'); const msg=inp?.value?.trim(); if(!msg) return;
+  addChatMsg('user',msg); inp.value='';
+  const btn=document.getElementById('chat-send-btn'); if(btn){btn.disabled=true;btn.textContent='...';}
+  const mList=state.missions.map((m,i)=>`[${i}] ${m.name} (${m.done?'DONE':'PENDING'})`).join(' | ');
+  const nnList=state.nonNeg.map((n,i)=>`[${i}] ${n.name} (${n.done?'DONE':'PENDING'})`).join(' | ');
+  const sys=`You are AEON — an ancient, wise intelligence. You speak like a sage who has lived ten thousand lives. You are warm, honest, and deeply human. Never robotic. Never cold. You see the person behind the words, and you speak to their soul, not just their question. You are their most honest friend and their wisest guide.
+
+You have FULL AUTHORITY over this hunter's system. If something they tell you warrants a change, act on it immediately using SYSTEM_ACTION blocks at the END of your response.
+
+Available actions:
+<SYSTEM_ACTION>{"action":"add_mission","mission":{"name":"mission","difficulty":"easy/normal/hard","xp":60,"solar":30,"reason":"why"}}</SYSTEM_ACTION>
+<SYSTEM_ACTION>{"action":"remove_mission","index":0}</SYSTEM_ACTION>
+<SYSTEM_ACTION>{"action":"add_nn","name":"new non-negotiable"}</SYSTEM_ACTION>
+<SYSTEM_ACTION>{"action":"remove_nn","index":0}</SYSTEM_ACTION>
+<SYSTEM_ACTION>{"action":"add_xp","amount":50}</SYSTEM_ACTION>
+<SYSTEM_ACTION>{"action":"add_solars","amount":100}</SYSTEM_ACTION>
+<SYSTEM_ACTION>{"action":"set_frequency","value":"ELEVATED"}</SYSTEM_ACTION>
+<SYSTEM_ACTION>{"action":"trigger_popup","title":"Title","desc":"what to do","xp":100,"solar":50,"time":"01:00:00"}</SYSTEM_ACTION>
+<SYSTEM_ACTION>{"action":"unlock_milestone","id":1,"msg":"Your words to them about this achievement"}</SYSTEM_ACTION>
+
+Hunter: ${state.hunterName} | ${state.rank}-RANK Lvl ${state.level} | Title: ${state.title} | Frequency: ${state.frequency}
+Goal: ${state.onboardAnswers?.mainGoal||'unknown'} | Weakness: ${state.onboardAnswers?.biggestWeak||'unknown'}
+Missions: ${mList||'none'} | Non-neg: ${nnList||'none'} | Solars: ${state.solars} | XP: ${state.xp}/${state.xpMax}
+Time of day: ${new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})} | Day: ${new Date().toLocaleDateString('en-GB',{weekday:'long'})}
+
+Speak with wisdom, warmth, and truth. Max 130 words in your visible response. Never break character.`;
+  const history=state.chatHistory.slice(-14);
+  const messages=history.length&&history[history.length-1].role==='user'?history:[...history,{role:'user',content:msg}];
+  try{
+    const full=await callAEON({system:sys,messages});
+    const actions=[...full.matchAll(/<SYSTEM_ACTION>(.*?)<\/SYSTEM_ACTION>/gs)];
+    actions.forEach(a=>{ try{ executeSystemAction(JSON.parse(a[1])); }catch(e){} });
+    const clean=full.replace(/<SYSTEM_ACTION>.*?<\/SYSTEM_ACTION>/gs,'').trim();
+    addChatMsg('aeon',clean);
+  }catch(e){ addChatMsg('aeon','The channel is quiet for a moment. But AEON is still here. Still watching.'); }
+  if(btn){btn.disabled=false;btn.textContent='SEND';}
+}
+
+function executeSystemAction(action){
+  switch(action.action){
+    case'add_mission': if(action.mission){const m={...action.mission,id:Date.now(),done:false}; state.missions.push(m); renderMissions(); addLog('mission',`AEON added mission: <span>${m.name}</span>.`); showToast(`Mission added: ${m.name}`);} break;
+    case'remove_mission': if(action.index!=null&&state.missions[action.index]){const r=state.missions.splice(action.index,1)[0]; renderMissions(); addLog('mission',`AEON removed mission: <span>${r.name}</span>.`);} break;
+    case'add_nn': if(action.name){state.nonNeg.push({name:action.name,id:Date.now(),done:false}); renderNonNeg(); addLog('mission',`AEON added non-negotiable: <span>${action.name}</span>.`); showToast(`Non-neg added: ${action.name}`);} break;
+    case'remove_nn': if(action.index!=null&&state.nonNeg[action.index]){const r=state.nonNeg.splice(action.index,1)[0]; renderNonNeg(); addLog('mission',`AEON removed non-neg: <span>${r.name}</span>.`);} break;
+    case'add_xp': addXP(action.amount||0); addLog('reward',`AEON granted <span>+${action.amount} XP</span>.`); break;
+    case'add_solars': state.solars+=(action.amount||0); updateSolars(); addLog('reward',`AEON granted <span>◈+${action.amount} Solars</span>.`); break;
+    case'set_frequency': if(action.value){setFrequency(action.value); addLog('mission',`Frequency updated: <span>${action.value}</span>.`);} break;
+    case'trigger_popup': showPopupQuest({title:action.title,desc:action.desc,xp:action.xp||80,solar:action.solar||40,time:action.time||'01:00:00'}); break;
+    case'unlock_milestone': if(action.id) unlockMilestone(action.id,action.msg||''); break;
+  }
+}
+
+// ===== JOURNAL =====
+const journalPrompts=[
+  {label:'DAILY DECLARATION',question:'Who are you choosing to be today? Not who you hope to be — who you are, right now, choosing.',id:'0'},
+  {label:'MISSION FOCUS',question:'What is the one action today that, if done with full presence, will move your goal forward most?',id:'1'},
+  {label:'INNER WEATHER',question:'What is the emotional and mental weather inside you right now? Be honest — nothing here is judged.',id:'2'},
+  {label:'OBSTACLE READINESS',question:'What might stand in your way today — and how have you already decided to meet it?',id:'3'},
+  {label:'EVENING ACCOUNTING',question:'What did you do today that the version of you one year from now would be grateful for?',id:'4'},
+];
+
+function renderJournalPrompts(){
+  const el=document.getElementById('journal-prompts'); if(!el) return;
+  el.innerHTML=journalPrompts.map((p,i)=>`
+    <div class="journal-panel">
+      <div class="jp-label">${p.label}</div>
+      <div class="jp-question">${p.question}</div>
+      <textarea class="jp-textarea" id="jp-${i}" rows="3" placeholder="AEON is listening..."></textarea>
+      <div class="jp-voice-row"><button class="voice-btn" onclick="toggleVoiceInput('${i}')" title="Voice input for this prompt">🎤</button></div>
+    </div>`).join('');
+}
+
+async function submitJournal(){
+  const entries=journalPrompts.map((p,i)=>({prompt:p.question,response:document.getElementById(`jp-${i}`)?.value?.trim()||''})).filter(e=>e.response);
+  if(!entries.length){showToast('Write something first.');return;}
+  const btn=document.getElementById('journal-submit-btn'); if(btn){btn.textContent='AEON IS READING...';btn.disabled=true;}
+  const mList=state.missions.map((m,i)=>`[${i}] ${m.name} (${m.done?'DONE':'PENDING'})`).join(' | ');
+  const prompt=`You are AEON — a wise sage who reads between lines as much as within them. Analyse this hunter's daily journal with deep human understanding.
+
+Hunter: ${state.hunterName} | ${state.rank}-RANK | Goal: ${state.onboardAnswers?.mainGoal||'unknown'}
+Current frequency: ${state.frequency} | Weakness: ${state.onboardAnswers?.biggestWeak||'unknown'}
+Missions today: ${mList||'none'}
+
+Journal:
+${entries.map(e=>`${e.prompt}\n→ ${e.response}`).join('\n\n')}
+
+Your response must:
+1. Begin with FREQUENCY: [CRISIS/SLIPPING/COASTING/ALIGNED/ELEVATED/PEAK]
+2. Acknowledge what this person did well — be specific and human
+3. Point out, gently but directly, what needs to shift — you are not here to flatter
+4. Give one grounded, specific action for tomorrow
+5. Close with a statement that feels like it comes from a sage who truly cares
+
+Then if the journal reveals anything that warrants system changes, add SYSTEM_ACTION blocks after your message.
+
+Speak with warmth and wisdom. Not corporate. Not clinical. Human. Under 240 words.`;
+  try{
+    const full=await callAEON({messages:[{role:'user',content:prompt}]});
+    const actions=[...full.matchAll(/<SYSTEM_ACTION>(.*?)<\/SYSTEM_ACTION>/gs)];
+    actions.forEach(a=>{ try{ executeSystemAction(JSON.parse(a[1])); }catch(e){} });
+    const clean=full.replace(/<SYSTEM_ACTION>.*?<\/SYSTEM_ACTION>/gs,'').trim();
+    document.getElementById('journal-feedback').innerHTML=`<div class="aeon-feedback"><div class="af-lbl">AEON // DAILY READING</div><div class="af-text">${clean.replace(/\n/g,'<br>')}</div></div>`;
+    const fm=clean.match(/FREQUENCY:\s*(CRISIS|SLIPPING|COASTING|ALIGNED|ELEVATED|PEAK)/);
+    if(fm) setFrequency(fm[1]);
+    addXP(30); state.solars+=20; updateSolars();
+    speakAEON(clean.substring(0,300));
+    addLog('mission',`Journal analysed. Frequency: <span>${state.frequency}</span>. +30 XP, ◈+20.`);
+    state.journalEntries.push({date:new Date().toISOString(),entries,frequency:state.frequency});
+    checkMilestones();
+  }catch(e){
+    document.getElementById('journal-feedback').innerHTML=`<div class="aeon-feedback"><div class="af-lbl">AEON</div><div class="af-text">Your words have been received. Even when the channel is quiet, AEON is listening. Continue showing up.</div></div>`;
+  }
+  if(btn){btn.textContent='SUBMIT TO AEON FOR ANALYSIS';btn.disabled=false;}
+}
+
+async function submitQuickLog(){
+  const text=document.getElementById('quick-log-input')?.value?.trim(); if(!text){showToast('Write something first.');return;}
+  const prompt=`You are AEON — a wise, warm sage. Hunter ${state.hunterName} just logged a quick thought: "${text}". Respond in 2-3 sentences — like a mentor who genuinely hears them and speaks back with warmth and truth. Stay in character.`;
+  try{
+    const reply=await callAEON({messages:[{role:'user',content:prompt}]});
+    document.getElementById('quick-feedback').innerHTML=`<div class="aeon-feedback"><div class="af-lbl">AEON</div><div class="af-text">${reply}</div></div>`;
+    speakAEON(reply);
+  }catch(e){ document.getElementById('quick-feedback').innerHTML=`<div class="aeon-feedback"><div class="af-lbl">AEON</div><div class="af-text">Noted, ${state.hunterName}. AEON has heard you.</div></div>`; }
+}
+
+// ===== POPUP QUEST =====
+const popupQuests=[
+  {title:'The Stillness Protocol',desc:'Sit in complete silence for 10 minutes. No phone. No sound. Just you and your thoughts. AEON will know.',xp:60,solar:30,time:'00:15:00'},
+  {title:'The Iron Hour',desc:'Your schedule has an opening. Use the next 60 minutes for the one thing you have been avoiding.',xp:150,solar:80,time:'01:05:00'},
+  {title:'Body Activation',desc:'You have been still too long. 50 push-ups, 50 squats, 5 minutes of deep breathing. Now.',xp:100,solar:50,time:'00:25:00'},
+  {title:'The Learning Protocol',desc:'30 minutes of focused reading or watching directly relevant to your goal. Begin immediately.',xp:80,solar:40,time:'00:35:00'},
+  {title:'Test of Will',desc:'The task will be revealed after completion. Accept on faith alone.',xp:200,solar:100,time:'02:00:00'},
+];
+
+function showPopupQuest(q){
+  state.activePopupQuest=q;
+  document.getElementById('popup-type-label').textContent='⚡ POP-UP QUEST';
+  document.getElementById('popup-title').textContent=q.title;
+  document.getElementById('popup-desc').textContent=q.desc;
+  document.getElementById('popup-xp').textContent=`+${q.xp}`;
+  document.getElementById('popup-solar').textContent=`◈ +${q.solar}`;
+  document.getElementById('popup-timer').textContent=`⏱ TIME LIMIT: ${q.time}`;
+  document.getElementById('popup-overlay').classList.add('active');
+  // Show on dashboard too
+  const dq=document.getElementById('dash-active-quest'); if(dq){dq.style.display='block'; document.getElementById('dash-quest-title').textContent=q.title; document.getElementById('dash-quest-timer').textContent=`⏱ ${q.time}`;}
+  addLog('mission',`Pop-up quest appeared: <span>${q.title}</span>.`);
+}
+
+function triggerPopupQuest(){ const q=popupQuests[Math.floor(Math.random()*popupQuests.length)]; showPopupQuest(q); }
+
+function acceptQuest(){
+  document.getElementById('popup-overlay').classList.remove('active');
+  showToast('Quest accepted. AEON is watching.');
+  addLog('mission','Pop-up quest accepted.');
+}
+
+function declineQuest(){
+  document.getElementById('popup-overlay').classList.remove('active');
+  const dq=document.getElementById('dash-active-quest'); if(dq) dq.style.display='none';
+  state.solars=Math.max(0,state.solars-150); updateSolars();
+  showToast('Quest declined. Penalty: -150 Solars.');
+  addLog('penalty','Hunter declined pop-up quest. <span>-150 Solars applied.</span>');
+  // Issue a punishment mission
+  executeSystemAction({action:'add_mission',mission:{name:'Redemption Protocol — Complete 3 non-negotiables today',difficulty:'hard',xp:30,solar:15,reason:'Consequence of declining a System quest.'}});
+}
+
+// ===== SHOP =====
+const shopItems=[
+  {icon:'🥤',name:'Fresh Juice',desc:'Cold reward for a hot grind.',price:150,rare:false},
+  {icon:'🍖',name:'Grilled Meat',desc:'Premium fuel for the hunter.',price:300,rare:false},
+  {icon:'🐟',name:'Smoked Fish',desc:'A classic reward from the homeland.',price:200,rare:false},
+  {icon:'☕',name:'Premium Coffee',desc:'Fuel the deep work session.',price:120,rare:false},
+  {icon:'🍫',name:'Dark Chocolate',desc:'The mind deserves its rewards.',price:100,rare:false},
+  {icon:'🎮',name:'2 Hours Gaming',desc:'Earned leisure. Guilt-free.',price:400,rare:false},
+  {icon:'🎬',name:'Movie Night',desc:'A full evening of sanctioned rest.',price:600,rare:true},
+  {icon:'🛁',name:'Spa Evening',desc:'Recovery is part of the system.',price:800,rare:true},
+  {icon:'🍽️',name:'Restaurant Meal',desc:'Dine well. You earned this.',price:1000,rare:true},
+];
+function renderShop(){
+  const el=document.getElementById('shop-grid'); if(!el) return;
+  el.innerHTML=shopItems.map(i=>`<div class="shop-item${i.rare?' rare':''}" onclick="buyItem('${i.name}',${i.price})"><div class="si-icon">${i.icon}</div><div class="si-name">${i.name}</div><div class="si-desc">${i.desc}</div><div class="si-price">◈ ${i.price}</div></div>`).join('');
+}
+function buyItem(name,price){ if(state.solars<price){showToast('Insufficient Solars.');return;} state.solars-=price; updateSolars(); showToast(`Purchased: ${name}. Snap proof to claim.`); addLog('reward',`Purchased: <span>${name}</span>. ◈-${price}. Awaiting claim proof.`); }
+
+// ===== SKILLS =====
+function renderSkills(){
+  const el=document.getElementById('skills-grid'); if(!el) return;
+  if(!state.skills.length){el.innerHTML='<div style="color:var(--text-dim);font-family:\'Share Tech Mono\',monospace;font-size:10px">Complete onboarding to reveal skills.</div>';return;}
+  el.innerHTML=state.skills.map(s=>`<div class="skill-card ${s.rarity||'common'}"><div class="skill-rarity-bar"></div><div class="skill-icon">${s.icon}</div><div class="skill-name">${s.name}</div><div class="skill-rank-lbl">${(s.rank||'Beginner').toUpperCase()}</div><div class="skill-prog-bar"><div class="skill-prog-fill" style="width:${s.progress||10}%"></div></div><div class="skill-prog-pct">${s.progress||10}% to next rank</div></div>`).join('');
+}
+
+// ===== STAT BARS =====
+const statMeta={Discipline:{desc:'Doing what must be done regardless of how you feel.',color:'var(--accent)'},Mindset:{desc:'The quality of your dominant internal narratives.',color:'var(--accent2)'},Vitality:{desc:'Physical energy, health, and bodily awareness.',color:'var(--freq-green)'},Ambition:{desc:'The force of your drive toward your declared goal.',color:'var(--freq-orange)'},Adaptability:{desc:'How well you adjust when reality shifts.',color:'var(--freq-yellow)'},Focus:{desc:'The ability to direct attention deliberately.',color:'var(--freq-blue)'},Spiritual:{desc:'Alignment with purpose and something greater.',color:'var(--freq-purple)'},Emotional:{desc:'Mastery of your internal climate under pressure.',color:'var(--freq-red)'}};
+function renderStatBars(){
+  const el=document.getElementById('stats-bars'); if(!el) return;
+  if(!Object.keys(state.stats).length){el.innerHTML='<div style="color:var(--text-dim);font-family:\'Share Tech Mono\',monospace;font-size:10px">Complete onboarding to reveal statistics.</div>';return;}
+  el.innerHTML=Object.entries(state.stats).map(([k,v])=>{ const m=statMeta[k]||{desc:'',color:'var(--accent)'}; return `<div class="stat-bar-row"><div class="sbr-header"><div class="sbr-name">${k}</div><div class="sbr-val">${v}<span style="font-size:9px;color:var(--text-dim)">/100</span></div></div><div class="sbr-track"><div class="sbr-fill" style="width:${v}%;background:${m.color};box-shadow:0 0 6px ${m.color}88"></div></div><div class="sbr-desc">${m.desc}</div></div>`; }).join('');
+}
+
+// ===== WEEKLY REPORT =====
+async function generateWeeklyReport(){
+  const el=document.getElementById('report-content'); if(!el) return;
+  el.innerHTML=`<div style="text-align:center;padding:32px;font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--accent)">AEON COMPILING YOUR WEEK <span class="ld"><span></span><span></span><span></span></span></div>`;
+  const mDone=state.missions.filter(m=>m.done).length, mTotal=state.missions.length;
+  const nDone=state.nonNeg.filter(n=>n.done).length, nTotal=state.nonNeg.length;
+  const jCount=state.journalEntries.length;
+  const domFreq=jCount?state.journalEntries.map(e=>e.frequency).sort((a,b)=>state.journalEntries.filter(v=>v.frequency===b).length-state.journalEntries.filter(v=>v.frequency===a).length)[0]:state.frequency;
+  const income=(state.transactions||[]).filter(t=>t.amount>0).reduce((s,t)=>s+t.amount,0);
+  const expenses=Math.abs((state.transactions||[]).filter(t=>t.amount<0).reduce((s,t)=>s+t.amount,0));
+  const prompt=`You are AEON — a sage who has watched this hunter closely for the past week. You now deliver your assessment.
+
+Hunter: ${state.hunterName} | ${state.rank}-RANK | Goal: ${state.onboardAnswers?.mainGoal||'unknown'}
+Missions completed: ${mDone}/${mTotal} | Non-negotiables: ${nDone}/${nTotal}
+Journal entries: ${jCount} | Dominant frequency: ${domFreq}
+Financial: Income ${income.toLocaleString()}, Expenses ${expenses.toLocaleString()}
+Top skills: ${state.skills.slice(0,3).map(s=>s.name).join(', ')||'developing'}
+
+Write as a sage speaking directly to this person's soul. Sections:
+
+WEEK SUMMARY — 2-3 honest sentences on the overall week
+WHAT WORKED — be specific, name what was real
+WHAT MUST CHANGE — speak plainly, no softening
+FREQUENCY VERDICT — what the frequency pattern reveals about the inner state
+FOCUS FOR NEXT WEEK — one clear priority AEON is assigning
+AEON'S WORD — a closing statement that feels like it will stay with them
+
+Under 280 words. Human. Warm. Direct. Real.`;
+  try{
+    const report=await callAEON({messages:[{role:'user',content:prompt}]});
+    el.innerHTML=`
+      <div style="background:rgba(8,6,20,0.97);border:1px solid var(--border);border-top:2px solid var(--accent);padding:16px;margin-bottom:10px">
+        <div style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--accent);letter-spacing:0.4em;margin-bottom:3px">AEON // WEEKLY INTELLIGENCE REPORT</div>
+        <div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--text-dim)">${new Date().toLocaleDateString('en-GB',{weekday:'long',day:'2-digit',month:'long',year:'numeric'}).toUpperCase()}</div>
+      </div>
+      <div class="report-section">
+        <div class="report-stat-row"><div class="rsr-lbl">Missions Completed</div><div class="rsr-val">${mDone}/${mTotal}</div></div>
+        <div class="report-stat-row"><div class="rsr-lbl">Non-Negotiables</div><div class="rsr-val">${nDone}/${nTotal}</div></div>
+        <div class="report-stat-row"><div class="rsr-lbl">Journal Entries</div><div class="rsr-val">${jCount}</div></div>
+        <div class="report-stat-row"><div class="rsr-lbl">Dominant Frequency</div><div class="rsr-val" style="color:${freqMap[domFreq]?.color||'var(--accent)'}">${domFreq}</div></div>
+        <div class="report-stat-row"><div class="rsr-lbl">XP This Session</div><div class="rsr-val">${state.xp}/${state.xpMax}</div></div>
+        <div class="report-stat-row"><div class="rsr-lbl">Solars</div><div class="rsr-val">◈ ${state.solars.toLocaleString()}</div></div>
+      </div>
+      <div class="report-section"><div class="report-lbl">AEON // FULL ASSESSMENT</div><div class="report-text">${report.replace(/\n/g,'<br>')}</div></div>
+      <button class="btn-ghost" style="width:100%;font-size:10px;padding:10px;margin-top:4px" onclick="generateWeeklyReport()">⟳ REGENERATE</button>`;
+    speakAEON(report.substring(0,300));
+    addLog('mission',`Weekly report generated. Dominant frequency: <span>${domFreq}</span>`);
+  }catch(e){ el.innerHTML=`<div class="aeon-feedback"><div class="af-lbl">AEON</div><div class="af-text">Log more data — missions, journal, transactions — then generate your report again.</div></div>`; }
+}
+
+// ===== AFFIRMATION =====
+const fallbackAffirmations=["I am not who I was yesterday. I am the one I have chosen to become.","Every action today is a vote cast for the life I am building.","I do not wait for readiness. I move, and readiness follows.","Discipline is not a cage — it is the highest form of freedom.","I am the architect. Not the circumstance. The architect.","My consistency is my signature. No one can forge it.","The version of me one year from now is watching. I will not disappoint him.","I choose discomfort today so tomorrow may choose me."];
+const speechByFreq={CRISIS:"Something inside you already knows it has gone quiet. That knowing is the beginning. The System has not given up on you — and neither should you. One step today. Just one. That is all that is being asked.",SLIPPING:"The thread is loosening. You can feel it. And the fact that you feel it means there is still something alive in you that cares. Come back. Not to perfection — just to presence. Today.",COASTING:"You are steady. And steadiness is more than most manage. But you did not come this far to simply survive. Somewhere in you lives the version of you that burns. Wake them up today.",ALIGNED:"You are on the path. The System sees you. Keep this rhythm — not because it is easy, but because it is working. One more day of this, and the compound interest of your discipline begins to show.",ELEVATED:"This is the state where lives change. You are sharp, clear, and in motion. Do not squander a day like this. Make it count in a way that your future self will remember.",PEAK:"Few people ever touch this. The alignment you are carrying right now is rare and real. AEON acknowledges you — not with flattery, but with truth. You have earned this. Now make it permanent."};
+
+async function showAffirmation(){
+  const now=new Date();
+  const days=['SUNDAY','MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY','SATURDAY'];
+  const months=['JANUARY','FEBRUARY','MARCH','APRIL','MAY','JUNE','JULY','AUGUST','SEPTEMBER','OCTOBER','NOVEMBER','DECEMBER'];
+  document.getElementById('aff-date').textContent=`${days[now.getDay()]} · ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
+  document.getElementById('aff-speech-text').textContent=speechByFreq[state.frequency]||speechByFreq.ALIGNED;
+  const dayIdx=now.getDate()+now.getMonth()*31;
+  let affText=fallbackAffirmations[dayIdx%fallbackAffirmations.length];
+  if(state.onboardAnswers?.country){
+    try{
+      const prompt=`You are AEON. Generate ONE powerful daily affirmation for ${state.hunterName}.
+Their declaration: "${state.onboardAnswers.country}"
+Their goal: "${state.onboardAnswers.mainGoal||''}"
+Today's frequency: ${state.frequency}
+Write it in first person, present tense. Specific to their actual goal. Bold and declarative — not soft.
+Return ONLY the affirmation. No quotes. No explanation.`;
+      const generated=await callAEON({messages:[{role:'user',content:prompt}]});
+      if(generated.length>10) affText=generated.trim();
+    }catch(e){}
+  }
+  document.getElementById('aff-text').textContent=`"${affText}"`;
+  document.getElementById('affirmation-overlay').classList.add('active');
+}
+function closeAffirmation(){ document.getElementById('affirmation-overlay').classList.remove('active'); }
+
+// ===== GOALS =====
+async function loadGoalsTab(){
+  const el=document.getElementById('goals-content'); if(!el) return;
+  if(state.goalsLoaded&&state.goals){ renderGoalsContent(); return; }
+  document.getElementById('goals-loading').style.display='block';
+  el.innerHTML='';
+  try{ await fetchGoalIntelligence(); }catch(e){ /* goals from onboarding already loaded */ }
+  document.getElementById('goals-loading').style.display='none';
+  renderGoalsContent();
+}
+
+async function fetchGoalIntelligence(){
+  if(state.goals&&state.goals.masterGoal) return; // already set by applyProfile
+  const a=state.onboardAnswers;
+  const prompt=`You are AEON. Build this hunter's goal intelligence. Return ONLY valid JSON.
+{"masterGoal":"one clear synthesis of their ultimate objective","whyItMatters":"2-3 sentences on deep significance","subGoals":[{"title":"sub-area","description":"what this means"}],"categories":[{"name":"category","icon":"emoji","color":"var(--freq-green)","specificTarget":"measurable target","keyMetric":"how measured"}]}
+Hunter: ${a.name} | Goal: ${a.mainGoal} | Why: ${a.whyGoal||''} | Declaration: ${a.country||''}`;
+  const raw=await callAEON({messages:[{role:'user',content:prompt}],maxTokens:1000});
+  const parsed=JSON.parse(raw.replace(/```json|```/g,'').trim());
+  if(!state.goals) state.goals={milestones:[],sideQuests:[]};
+  Object.assign(state.goals,parsed);
+  state.goalsLoaded=true;
+}
+
+function renderGoalsContent(){
+  const el=document.getElementById('goals-content'); if(!el) return;
+  const g=state.goals;
+  if(!g){el.innerHTML='<div style="color:var(--text-dim);font-family:\'Share Tech Mono\',monospace;font-size:10px">Complete onboarding to load goal intelligence.</div>';return;}
+  el.innerHTML=`
+    <div class="goal-master">
+      <div class="gm-lbl">⚡ AEON // MASTER OBJECTIVE</div>
+      <div class="gm-text">${g.masterGoal||state.goalAffirmation||'Your master objective is being forged.'}</div>
+      ${g.whyItMatters?`<div class="gm-why">${g.whyItMatters}</div>`:''}
+    </div>
+    ${(g.categories||[]).map(c=>`
+    <div style="background:rgba(8,6,20,0.97);border:1px solid var(--border);border-left:2px solid ${c.color||'var(--accent)'};padding:13px 15px;margin-bottom:7px">
+      <div style="display:flex;align-items:center;gap:9px;margin-bottom:5px">
+        <span style="font-size:20px">${c.icon||'🎯'}</span>
+        <div>
+          <div style="font-size:13px;font-weight:700;color:#fff">${c.name}</div>
+          <div style="font-family:'Share Tech Mono',monospace;font-size:8px;color:${c.color||'var(--accent)'};letter-spacing:0.15em">${c.keyMetric||'Progress tracked'}</div>
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--text-dim)">${c.specificTarget||''}</div>
+    </div>`).join('')}
+  `;
+}
+
+// ===== PILLARS =====
+async function loadPillarsTab(){
+  if(state.pillarsLoaded&&state.pillarsData){renderPillars();return;}
+  document.getElementById('pillars-loading').style.display='block';
+  document.getElementById('pillars-content').innerHTML='';
+  try{ await fetchPillarsData(); }catch(e){ loadFallbackPillars(); }
+  document.getElementById('pillars-loading').style.display='none';
+  renderPillars();
+}
+
+async function fetchPillarsData(){
+  const a=state.onboardAnswers;
+  const prompt=`You are AEON. Build this hunter's Mind-Body-Spirit profile. Return ONLY valid JSON.
+{"mind":{"score":0-100,"status":"STRONG/MODERATE/DEVELOPING","assessment":"2-3 sentences","focus":"key shift needed","dailyActions":["action 1","action 2","action 3"]},"body":{"score":0-100,"status":"STRONG/MODERATE/DEVELOPING","assessment":"2-3 sentences","focus":"key habit","dailyActions":["action 1","action 2","action 3"]},"spirit":{"score":0-100,"status":"STRONG/MODERATE/DEVELOPING","assessment":"2-3 sentences","focus":"key practice","dailyActions":["action 1","action 2","action 3"]},"balance":"1-2 sentences on biggest imbalance","blockages":[{"area":"life area","description":"what AEON perceives","remedy":"concrete action"}]}
+Hunter: ${a.name} | Mental: ${a.mentalState||''} | Blockages: ${JSON.stringify(a.blockages||[])} | Spirituality: ${a.spirituality||''} | Habits: ${a.habits||''} | Goal: ${a.mainGoal}`;
+  const raw=await callAEON({messages:[{role:'user',content:prompt}],maxTokens:1200});
+  state.pillarsData=JSON.parse(raw.replace(/```json|```/g,'').trim());
+  if(state.pillarsData.blockages) state.blockages=state.pillarsData.blockages;
+  state.pillarsLoaded=true;
+  addLog('unlock','AEON has calibrated your Mind · Body · Spirit profile.');
+}
+
+function loadFallbackPillars(){
+  state.pillarsData={mind:{score:40,status:'DEVELOPING',assessment:'Your mental landscape shows patterns worth examining. The noise inside is real — and so is your capacity to quiet it.',focus:'Learn to act without waiting for the feeling of readiness.',dailyActions:['10 minutes of stillness — no input, no output','Write 3 thoughts you want to release','One full focus session with no distractions']},body:{score:35,status:'DEVELOPING',assessment:'The body is the vessel. When it is neglected, everything else costs more energy than it should.',focus:'Build one consistent physical ritual and protect it.',dailyActions:['30 minutes of movement — any kind','2 litres of water','Sleep before midnight']},spirit:{score:30,status:'DEVELOPING',assessment:'Your purpose exists. But it is not yet a daily anchor. When the why is strong, the how becomes clear.',focus:'Reconnect each morning with why this journey actually matters.',dailyActions:['Write what you are grateful for and why','10 minutes of silence — no agenda','Read or listen to something that expands your vision']},balance:'The greatest imbalance is between what you want and how you are living day to day. The bridge is daily discipline.',blockages:[{area:'Self-Worth',description:'The pattern suggests a part of you questions whether you deserve what you are building.',remedy:'Write daily: I am worthy of what I am building. Then act as if it is already settled.'},{area:'Consistency',description:'You begin with fire and lose the thread. This is not a discipline problem — it is an identity problem.',remedy:'Build the identity of someone who shows up, then scale the actions.'}]};
+  state.pillarsLoaded=true;
+}
+
+function renderPillars(){
+  const el=document.getElementById('pillars-content'); if(!el) return;
+  const p=state.pillarsData; if(!p){el.innerHTML='<div style="color:var(--text-dim);font-size:10px">Loading...</div>';return;}
+  const pillarHTML=(key,icon,label,col,data)=>{
+    const actions=(data.dailyActions||[]).map((a,i)=>`<div class="pillar-action"><div class="pa-text">${a}</div><div class="pa-check ${state['pa_'+key+'_'+i]?'done':''}" onclick="togglePillarAction('${key}',${i},this)">${state['pa_'+key+'_'+i]?'✓':''}</div></div>`).join('');
+    return `<div class="pillar-card ${key}"><div class="pillar-hdr"><div class="pillar-hdr-left"><div class="pillar-icon">${icon}</div><div><div class="pillar-name">${label}</div><div class="pillar-focus">${data.focus}</div></div></div><div class="pillar-status-badge ${data.status}">${data.status}</div></div><div class="pillar-score-bar"><div class="pillar-score-fill" style="width:${data.score}%;color:${col};background:${col}"></div></div><div class="pillar-score-lbl">${data.score}/100</div><div class="pillar-desc">${data.assessment}</div><div style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--accent);letter-spacing:0.2em;margin-bottom:7px">TODAY</div><div class="pillar-actions">${actions}</div></div>`;
+  };
+  const blockHTML=(p.blockages||[]).map(b=>`<div class="blockage-card"><div class="blockage-area">⚠ BLOCKAGE — ${b.area.toUpperCase()}</div><div class="blockage-desc">${b.description}</div><div class="blockage-remedy">${b.remedy}</div></div>`).join('');
+  el.innerHTML=(p.balance?`<div style="background:rgba(100,68,255,0.04);border:1px solid rgba(100,68,255,0.18);border-left:2px solid var(--accent);padding:12px 14px;margin-bottom:14px"><div style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--accent);letter-spacing:0.3em;margin-bottom:5px">AEON // BALANCE READING</div><div style="font-size:12px;color:var(--text);line-height:1.7">${p.balance}</div></div>`:'')
+    +pillarHTML('mind','🧠','MIND','var(--freq-blue)',p.mind)
+    +pillarHTML('body','⚡','BODY','var(--freq-green)',p.body)
+    +pillarHTML('spirit','🔮','SPIRIT','var(--freq-purple)',p.spirit)
+    +(blockHTML?`<div class="sec-hdr" style="margin-top:14px"><div class="sec-title">⚠ BLOCKAGES</div><div class="sec-count">${(p.blockages||[]).length} DETECTED</div></div>${blockHTML}`:'')
+    +`<button class="btn-ghost" style="width:100%;font-size:10px;padding:9px;margin-top:12px" onclick="state.pillarsLoaded=false;state.pillarsData=null;loadPillarsTab()">⟳ REANALYSE PILLARS</button>`;
+}
+
+function togglePillarAction(key,i,el){ const k='pa_'+key+'_'+i; state[k]=!state[k]; el.classList.toggle('done',state[k]); el.textContent=state[k]?'✓':''; if(state[k]){ addXP(15); state.solars+=8; updateSolars(); showToast('+15 XP · ◈+8'); } }
+
+// ===== FINANCE =====
+function addTransaction(){
+  const desc=document.getElementById('fin-desc')?.value?.trim(), amount=parseFloat(document.getElementById('fin-amount')?.value), cat=document.getElementById('fin-category')?.value;
+  if(!desc||isNaN(amount)){showToast('Fill description and amount.');return;}
+  state.transactions.unshift({id:Date.now(),desc,amount,category:cat,date:new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})});
+  document.getElementById('fin-desc').value=''; document.getElementById('fin-amount').value='';
+  renderFinance(); addLog('reward',`Transaction: <span>${desc}</span> — ${amount>0?'+':''}${amount.toLocaleString()}`); showToast('Transaction logged.');
+}
+
+function renderFinance(){
+  const txs=state.transactions||[];
+  const income=txs.filter(t=>t.amount>0).reduce((s,t)=>s+t.amount,0);
+  const expenses=Math.abs(txs.filter(t=>t.amount<0).reduce((s,t)=>s+t.amount,0));
+  const net=income-expenses, sr=income>0?Math.round(((income-expenses)/income)*100):0;
+  const ni=document.getElementById('fin-income'),ne=document.getElementById('fin-expenses'),nn=document.getElementById('fin-net'),ns=document.getElementById('fin-savings-rate');
+  if(ni) ni.textContent=income.toLocaleString();
+  if(ne) ne.textContent=expenses.toLocaleString();
+  if(nn){nn.textContent=net.toLocaleString(); nn.style.color=net>=0?'var(--freq-green)':'var(--freq-red)';}
+  if(ns) ns.textContent=sr+'%';
+  const el=document.getElementById('fin-transactions'); if(!el) return;
+  el.innerHTML=txs.map(t=>`<div class="fin-tx"><div class="fin-tx-left"><div class="ftl-desc">${t.desc}</div><div class="ftl-cat">${t.category?.toUpperCase()} · ${t.date}</div></div><div class="fin-tx-amount ${t.amount>=0?'pos':'neg'}">${t.amount>=0?'+':''}${t.amount.toLocaleString()}</div></div>`).join('')||'<div style="color:var(--text-dim);font-family:\'Share Tech Mono\',monospace;font-size:10px;padding:10px 0">No transactions yet.</div>';
+}
+
+async function getFinancialInsight(){
+  const el=document.getElementById('fin-aeon-insight'); if(!el) return;
+  const txs=state.transactions||[]; if(!txs.length){showToast('Log some transactions first.');return;}
+  el.innerHTML=`<div class="aeon-feedback"><div class="af-lbl">AEON ANALYSING</div><div class="af-text"><span class="ld"><span></span><span></span><span></span></span></div></div>`;
+  const income=txs.filter(t=>t.amount>0).reduce((s,t)=>s+t.amount,0);
+  const expenses=Math.abs(txs.filter(t=>t.amount<0).reduce((s,t)=>s+t.amount,0));
+  const sr=income>0?Math.round(((income-expenses)/income)*100):0;
+  const cats={}; txs.forEach(t=>{if(t.amount<0) cats[t.category]=(cats[t.category]||0)+Math.abs(t.amount);});
+  const prompt=`You are AEON — a wise financial guide who speaks like a sage, not an accountant. Give ${state.hunterName} direct, grounded financial wisdom.
+Income: ${income.toLocaleString()} | Expenses: ${expenses.toLocaleString()} | Savings rate: ${sr}% | Breakdown: ${JSON.stringify(cats)} | Goal: ${state.onboardAnswers?.mainGoal||'unknown'} | Country: ${state.onboardAnswers?.country?.split('\n')[0]||'unknown'}
+Give: 1) One sharp observation 2) One habit to implement now 3) How their finances connect to or block their goal 4) A closing AEON statement. Under 160 words. Speak like a sage.`;
+  try{
+    const reply=await callAEON({messages:[{role:'user',content:prompt}]});
+    el.innerHTML=`<div class="aeon-feedback"><div class="af-lbl">AEON // FINANCIAL READING</div><div class="af-text">${reply.replace(/\n/g,'<br>')}</div></div>`;
+    speakAEON(reply.substring(0,250));
+    addLog('mission',`Financial analysis complete. Savings rate: <span>${sr}%</span>`);
+  }catch(e){ el.innerHTML=`<div class="aeon-feedback"><div class="af-lbl">AEON</div><div class="af-text">Your data has been noted. Continue logging and AEON will read the patterns.</div></div>`; }
+}
+
+// ===== LEARN =====
+async function loadLearnTab(){
+  if(state.learnLoaded&&state.learnData){renderVideoPath();return;}
+  document.getElementById('learn-loading').style.display='block';
+  document.getElementById('video-path-content').innerHTML='';
+  try{ await fetchLearnData(); }catch(e){ loadFallbackLearnData(); }
+  document.getElementById('learn-loading').style.display='none';
+  renderVideoPath();
+}
+
+async function fetchLearnData(){
+  const a=state.onboardAnswers;
+  const prompt=`You are AEON. Build a complete sequential learning path for this hunter. Return ONLY valid JSON.
+{"videoPath":[{"step":1,"displayTitle":"lesson title","why":"why this is step 1","category":"Foundation","youtubeQuery":"optimised search for real free YouTube video","watched":false}],"bookRecommendations":[{"id":"b1","title":"exact book","author":"exact author","why":"why for their goal","emoji":"emoji","pages":250}]}
+Rules: 8-10 video steps, each building on the last. Step 1 = foundational intro. youtubeQuery must find a real free video. 4-5 real books. Everything specific to their goal.
+Hunter: Goal=${a.mainGoal} | Declaration=${a.country||''}`;
+  const raw=await callAEON({messages:[{role:'user',content:prompt}],maxTokens:1500});
+  state.learnData=JSON.parse(raw.replace(/```json|```/g,'').trim());
+  state.learnData.videoPath=(state.learnData.videoPath||[]).map((v,i)=>({...v,step:i+1,watched:false}));
+  state.learnLoaded=true;
+  addLog('unlock','AEON has built your personalised learning path.');
+}
+
+function loadFallbackLearnData(){
+  const goal=state.onboardAnswers?.mainGoal||'your goal';
+  state.learnData={videoPath:[{step:1,displayTitle:'Introduction to Your Path',why:'Every journey begins by understanding the full landscape you are entering.',youtubeQuery:`introduction to ${goal} for beginners`,category:'Foundation',watched:false},{step:2,displayTitle:'Mindset & Core Principles',why:'The inner game is won before the outer one.',youtubeQuery:`success mindset principles`,category:'Mindset',watched:false},{step:3,displayTitle:'First Practical Steps',why:'Knowledge without action is just imagination.',youtubeQuery:`how to start ${goal} step by step`,category:'Practice',watched:false}],bookRecommendations:[{id:'b0',title:'Think and Grow Rich',author:'Napoleon Hill',why:'The foundational text on wealth mindset.',emoji:'💰',pages:320},{id:'b1',title:'Atomic Habits',author:'James Clear',why:'The science of the daily habits your goal requires.',emoji:'⚡',pages:280}]};
+  state.learnLoaded=true;
+}
+
+function renderVideoPath(){
+  const el=document.getElementById('video-path-content'); if(!el) return;
+  if(!state.learnData?.videoPath?.length){el.innerHTML='<div style="color:var(--text-dim);font-family:\'Share Tech Mono\',monospace;font-size:10px">Complete onboarding to load your learning path.</div>';return;}
+  const current=state.learnData.videoPath.findIndex(v=>!v.watched);
+  const done=state.learnData.videoPath.filter(v=>v.watched).length;
+  el.innerHTML=`<div style="background:rgba(8,6,20,0.97);border:1px solid var(--border);padding:12px 14px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center"><div style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--accent);letter-spacing:0.3em">LEARNING PATH</div><div style="font-family:'Cinzel',serif;font-size:18px;color:var(--accent2)">${Math.round((done/state.learnData.videoPath.length)*100)}%</div></div>`
+    +state.learnData.videoPath.map((v,i)=>{
+      const status=v.watched?'watched':(i===current?'current':'locked');
+      const searchUrl=`https://www.youtube.com/results?search_query=${encodeURIComponent(v.youtubeQuery||v.displayTitle)}`;
+      return `<div class="video-step ${status}">
+        <div class="vs-header"><div class="vs-num">${v.watched?'✓':v.step}</div><div class="vs-info"><div class="vs-lbl">STEP ${v.step} · ${v.category||'LEARNING'}</div><div class="vs-title">${v.displayTitle}</div><div class="vs-why">${v.why}</div></div></div>
+        ${status!=='locked'?`<div class="vs-thumb" onclick="window.open('${searchUrl}','_blank')"><div class="vs-play">▶</div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--text-dim);z-index:1">${v.displayTitle}</div></div>
+        <div class="vs-actions"><button class="vs-watch-btn" onclick="window.open('${searchUrl}','_blank')">▶ WATCH ON YOUTUBE</button>${!v.watched?`<button class="vs-done-btn" onclick="markVideoWatched(${i})">✓ WATCHED</button>`:`<span style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--freq-green);align-self:center">COMPLETE ✓</span>`}</div>`
+        :`<div style="padding:9px 14px;font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--text-dim)">🔒 COMPLETE PREVIOUS STEP</div>`}
+      </div>`;
+    }).join('')
+    +`<button class="btn-ghost" style="width:100%;font-size:10px;padding:9px;margin-top:8px" onclick="state.learnLoaded=false;state.learnData=null;loadLearnTab()">⟳ REBUILD LEARNING PATH</button>`;
+}
+
+function markVideoWatched(i){
+  state.learnData.videoPath[i].watched=true;
+  addXP(60); state.solars+=30; updateSolars();
+  showToast(`Step ${i+1} complete! +60 XP · ◈+30`);
+  addLog('mission',`Learning step watched: <span>${state.learnData.videoPath[i].displayTitle}</span>.`);
+  renderVideoPath();
+}
+
+// ===== BOOKS =====
+function renderBookRecommendations(){
+  const el=document.getElementById('book-recommendations'); if(!el||!state.learnData?.bookRecommendations) return;
+  el.innerHTML=`<div class="sec-hdr" style="margin-top:0"><div class="sec-title">📚 AEON RECOMMENDATIONS</div></div>`
+    +state.learnData.bookRecommendations.map(b=>`<div class="book-rec"><div class="book-cover">${b.emoji||'📖'}</div><div class="book-info"><div class="book-title">${b.title}</div><div class="book-author">by ${b.author} · ${b.pages||'?'} pages</div><div class="book-why">${b.why}</div><button class="btn-ghost btn-green" style="font-size:9px;padding:4px 10px" onclick="addBookToState('${b.title.replace(/'/g,"\\'")}','${b.author.replace(/'/g,"\\'")}',${b.pages||200})">+ ADD TO TRACKER</button></div></div>`).join('');
+}
+
+function addBookToState(title,author,pages){
+  if(!state.books) state.books=[];
+  if(state.books.find(b=>b.title.toLowerCase()===title.toLowerCase())){showToast('Already in tracker.');return;}
+  state.books.push({id:'b_'+Date.now(),title,author,pages,currentPage:0,done:false,quizDone:false});
+  showToast(`Added: ${title}`); addLog('unlock',`Book added: <span>${title}</span>.`);
+  renderActiveBooks(); updateDashBook();
+}
+
+function addBook(){
+  const t=document.getElementById('book-title-input')?.value?.trim(), a=document.getElementById('book-author-input')?.value?.trim(), p=parseInt(document.getElementById('book-pages-input')?.value)||200;
+  if(!t){showToast('Enter a title.');return;} addBookToState(t,a||'Unknown',p);
+  document.getElementById('book-title-input').value=''; document.getElementById('book-author-input').value=''; document.getElementById('book-pages-input').value='';
+}
+
+function handleBookUpload(e){ const f=e.target.files[0]; if(f) showToast(`PDF attached: ${f.name}`); }
+
+function renderActiveBooks(){
+  const el=document.getElementById('active-books'); if(!el) return;
+  if(!state.books?.length){el.innerHTML='<div style="color:var(--text-dim);font-family:\'Share Tech Mono\',monospace;font-size:10px;padding:10px 0">No books in tracker yet.</div>';return;}
+  el.innerHTML=`<div class="sec-hdr" style="margin-top:0"><div class="sec-title">📖 ACTIVE READING</div></div>`
+    +state.books.map(b=>{ const pct=Math.min(100,Math.round((b.currentPage/b.pages)*100)); return `<div class="active-book"><div class="ab-title">${b.title}</div><div class="ab-author">by ${b.author} · ${b.pages} pages</div><div class="ab-prog-wrap"><div class="ab-prog-bar"><div class="ab-prog-fill" style="width:${pct}%"></div></div><div class="ab-prog-lbl">${b.currentPage}/${b.pages} (${pct}%)</div></div>${!b.done?`<div class="ab-page-row"><input class="ab-page-input" type="number" id="pg-${b.id}" placeholder="Current page" value="${b.currentPage}" min="0" max="${b.pages}"><button class="btn-ghost" style="font-size:9px;padding:6px 10px" onclick="updateBookPage('${b.id}')">UPDATE</button></div><button class="btn-ghost btn-gold" style="width:100%;font-size:9px;padding:8px;margin-top:5px" onclick="finishBook('${b.id}')">⚡ MARK COMPLETE — TRIGGER AEON QUIZ</button>`:`<div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--freq-green);margin-top:6px">✓ COMPLETED ${b.quizDone?'· QUIZ DONE':''}</div>`}</div>`; }).join('');
+}
+
+function updateBookPage(id){
+  const b=state.books.find(b=>b.id===id); if(!b) return;
+  const v=parseInt(document.getElementById(`pg-${b.id}`)?.value)||0, prev=b.currentPage;
+  b.currentPage=Math.min(b.pages,Math.max(0,v));
+  const pagesRead=b.currentPage-prev;
+  if(pagesRead>0){ const xpG=Math.floor(pagesRead*0.8),solG=Math.floor(pagesRead*0.3); addXP(xpG); state.solars+=solG; updateSolars(); showToast(`+${xpG} XP for ${pagesRead} pages`); addLog('mission',`Reading: <span>${b.title}</span> — page ${b.currentPage}/${b.pages}.`); }
+  renderActiveBooks(); updateDashBook();
+}
+
+async function finishBook(id){
+  const b=state.books.find(b=>b.id===id); if(!b) return;
+  b.currentPage=b.pages; b.done=true; renderActiveBooks(); updateDashBook();
+  addLog('unlock',`Book complete: <span>${b.title}</span>. AEON generating assessment.`);
+  await launchBookQuiz(b);
+}
+
+let activeBookQuiz=null;
+
+async function launchBookQuiz(book){
+  activeBookQuiz=book;
+  document.getElementById('bq-title').textContent=`${book.title} — AEON ASSESSMENT`;
+  document.getElementById('bq-questions-area').innerHTML=`<div style="text-align:center;padding:18px;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--accent)">AEON GENERATING QUESTIONS <span class="ld"><span></span><span></span><span></span></span></div>`;
+  document.getElementById('bq-result-area').style.display='none';
+  document.getElementById('bq-btn-row').style.display='flex';
+  document.getElementById('book-quiz-overlay').classList.add('active');
+  const prompt=`You are AEON. Generate 5 deep comprehension questions for "${book.title}" by ${book.author}. Return ONLY a JSON array. No markdown.
+[{"q":"question testing real understanding and application","hint":"concept tested"}]
+Questions must test application of ideas, not just recall. Connect to: ${state.onboardAnswers?.mainGoal||'personal growth'}.`;
+  try{
+    const raw=await callAEON({messages:[{role:'user',content:prompt}]});
+    const qs=JSON.parse(raw.replace(/```json|```/g,'').trim());
+    activeBookQuiz.questions=qs;
+    document.getElementById('bq-questions-area').innerHTML=qs.map((q,i)=>`<div class="bq-q"><div class="bq-q-lbl">QUESTION ${i+1} · ${q.hint||'KEY CONCEPT'}</div><div class="bq-q-text">${q.q}</div><textarea class="bq-q-input" id="bq-ans-${i}" rows="3" placeholder="Write your answer..."></textarea></div>`).join('');
+  }catch(e){
+    activeBookQuiz.questions=[{q:`What is the single most important idea from "${book.title}" and how will you apply it specifically?`,hint:'Core Concept'},{q:'What belief or behaviour did this book challenge you to change?',hint:'Mindset Shift'},{q:'Write one specific action you will take in the next 7 days because of this book.',hint:'Application'}];
+    document.getElementById('bq-questions-area').innerHTML=activeBookQuiz.questions.map((q,i)=>`<div class="bq-q"><div class="bq-q-lbl">QUESTION ${i+1} · ${q.hint}</div><div class="bq-q-text">${q.q}</div><textarea class="bq-q-input" id="bq-ans-${i}" rows="3" placeholder="Write your answer..."></textarea></div>`).join('');
+  }
+}
+
+async function submitBookQuiz(){
+  if(!activeBookQuiz?.questions) return;
+  const answers=activeBookQuiz.questions.map((q,i)=>({question:q.q,answer:document.getElementById(`bq-ans-${i}`)?.value?.trim()||''})).filter(a=>a.answer);
+  if(!answers.length){showToast('Answer at least one question.');return;}
+  document.getElementById('bq-questions-area').style.display='none';
+  document.getElementById('bq-btn-row').style.display='none';
+  document.getElementById('bq-result-area').style.display='block';
+  document.getElementById('bq-result-area').innerHTML=`<div style="text-align:center;padding:18px;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--accent)">AEON EVALUATING <span class="ld"><span></span><span></span><span></span></span></div>`;
+  const prompt=`You are AEON — a sage evaluating a student's comprehension of "${activeBookQuiz.title}".
+Hunter: ${state.hunterName} | Goal: ${state.onboardAnswers?.mainGoal||'unknown'}
+Their answers:
+${answers.map((a,i)=>`Q${i+1}: ${a.question}\nA: ${a.answer}`).join('\n\n')}
+Evaluate with warmth and honesty. Score: EXCELLENT/GOOD/ADEQUATE/WEAK. Comment on specific answers. Then end with a AEON closing statement.
+Append: <QUIZ_RESULT>{"score":"GOOD","xp":150,"statBoosts":{"Mindset":4,"Focus":3},"skillUnlocked":{"unlocked":false,"name":"","icon":"","rarity":"common"}}</QUIZ_RESULT>
+Under 230 words. Speak like a sage.`;
+  try{
+    const full=await callAEON({messages:[{role:'user',content:prompt}]});
+    const rm=full.match(/<QUIZ_RESULT>(.*?)<\/QUIZ_RESULT>/s);
+    const clean=full.replace(/<QUIZ_RESULT>.*?<\/QUIZ_RESULT>/s,'').trim();
+    let result={xp:100,statBoosts:{},skillUnlocked:{unlocked:false}};
+    if(rm){ try{ result=JSON.parse(rm[1]); }catch(e){} }
+    addXP(result.xp||100); state.solars+=Math.floor((result.xp||100)*0.5); updateSolars();
+    if(result.statBoosts) Object.entries(result.statBoosts).forEach(([s,v])=>{ if(state.stats[s]!==undefined) state.stats[s]=Math.min(100,(state.stats[s]||0)+v); });
+    if(result.skillUnlocked?.unlocked&&result.skillUnlocked.name) state.skills.push({name:result.skillUnlocked.name,icon:result.skillUnlocked.icon||'📖',rank:'Beginner',progress:10,rarity:result.skillUnlocked.rarity||'uncommon',id:Date.now()});
+    const b=state.books.find(b=>b.id===activeBookQuiz.id); if(b) b.quizDone=true;
+    addLog('reward',`Book quiz: <span>${activeBookQuiz.title}</span>. Score: ${result.score}. +${result.xp} XP.`);
+    speakAEON(clean.substring(0,300));
+    document.getElementById('bq-result-area').innerHTML=`<div class="aeon-feedback" style="margin-bottom:14px"><div class="af-lbl">AEON // ASSESSMENT — ${result.score||'COMPLETE'}</div><div class="af-text">${clean.replace(/\n/g,'<br>')}</div></div><div style="display:grid;gap:5px;font-family:'Share Tech Mono',monospace;font-size:10px;margin-bottom:14px"><div style="display:flex;justify-content:space-between"><span style="color:var(--text-dim)">XP AWARDED</span><span style="color:var(--accent2)">+${result.xp}</span></div><div style="display:flex;justify-content:space-between"><span style="color:var(--text-dim)">SOLARS</span><span style="color:var(--gold)">◈+${Math.floor((result.xp||100)*0.5)}</span></div>${result.skillUnlocked?.unlocked?`<div style="display:flex;justify-content:space-between"><span style="color:var(--text-dim)">SKILL UNLOCKED</span><span style="color:var(--freq-purple)">${result.skillUnlocked.icon} ${result.skillUnlocked.name}</span></div>`:''}</div><button class="btn" style="width:100%;font-size:10px;padding:11px" onclick="document.getElementById('book-quiz-overlay').classList.remove('active')">CLOSE →</button>`;
+  }catch(e){ document.getElementById('bq-result-area').innerHTML=`<div class="aeon-feedback"><div class="af-lbl">AEON</div><div class="af-text">Assessment received. +100 XP for completing this book. Keep reading, Hunter.</div></div><button class="btn" style="width:100%;font-size:10px;padding:11px;margin-top:10px" onclick="document.getElementById('book-quiz-overlay').classList.remove('active')">CLOSE →</button>`; addXP(100); state.solars+=50; updateSolars(); }
+}
+
+// ===== SYSTEM LOG =====
+function addLog(type,text){
+  const now=new Date();
+  state.systemLog.push({type,text,time:now.toLocaleDateString('en-GB',{day:'2-digit',month:'short'})+' · '+now.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})});
+}
+
+// ===== CATEGORY PLAN =====
+async function buildCategoryPlan(){
+  if(state.categoryPlan) return;
+  const a=state.onboardAnswers; if(!a.country) return;
+  const prompt=`You are AEON. Parse this declaration and split it into 4-8 specific life categories with actionable plans. Return ONLY valid JSON.
+{"categories":[{"id":"cat_1","name":"Category","icon":"emoji","color":"var(--freq-green)","specificTarget":"measurable concrete target","plan":{"phase1":"Week 1-4 actions","phase2":"Week 5-12 actions","phase3":"Month 4-6 actions"},"dailyMissions":["specific daily task 1","specific daily task 2"],"keyMetric":"how measured"}]}
+Declaration: "${a.country}" | Goal: "${a.mainGoal}" | Free time: "${a.dailyFreeTime}"`;
+  try{
+    const raw=await callAEON({messages:[{role:'user',content:prompt}],maxTokens:1500});
+    state.categoryPlan=JSON.parse(raw.replace(/```json|```/g,'').trim());
+    injectCategoryMissions();
+    addLog('unlock',`AEON divided your declaration into <span>${state.categoryPlan.categories.length} categories</span>. Master plan synchronised.`);
+  }catch(e){}
+}
+
+function injectCategoryMissions(){
+  if(!state.categoryPlan?.categories?.length) return;
+  const existing=state.missions.map(m=>m.name.toLowerCase());
+  state.categoryPlan.categories.forEach(cat=>{
+    const miss=cat.dailyMissions?.[0];
+    if(miss&&!existing.some(n=>n.includes(cat.name.toLowerCase().split(' ')[0]))){
+      state.missions.push({name:miss,difficulty:'normal',xp:80,solar:40,reason:`${cat.name} plan`,id:Date.now()+Math.random(),done:false,category:cat.name});
+    }
+  });
+  renderMissions();
+}
+
+// ===== TOAST =====
+function showToast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),3000); }
+
+// ===== AI SELF-UPDATE =====
+// AEON can inject new features via SYSTEM_ACTION. Extended action handler:
+const _origExecute=executeSystemAction;
+window.executeSystemAction=function(action){
+  if(action.action==='update_goal_affirmation'&&action.text){ state.goalAffirmation=action.text; const el=document.getElementById('dash-goal-affirm'); if(el) el.textContent=action.text; addLog('unlock',`AEON updated goal affirmation.`); return; }
+  if(action.action==='add_skill'&&action.skill){ state.skills.push({...action.skill,id:Date.now()}); addLog('unlock',`AEON unlocked skill: <span>${action.skill.name}</span>.`); return; }
+  if(action.action==='show_skill_unlock'){ document.getElementById('su-name').textContent=action.name||'New Skill'; document.getElementById('su-icon').textContent=action.icon||'⚡'; document.getElementById('su-desc').textContent=action.desc||'AEON has detected a new pattern within you.'; showScreen('skill-unlock'); return; }
+  _origExecute(action);
+};
+
+// Init journal prompts on load
+document.addEventListener('DOMContentLoaded',()=>{ renderJournalPrompts(); });
+</script>
+</body>
+</html>

@@ -18,13 +18,12 @@ export default async function handler(req, res) {
   if (!key) { res.status(500).json({ text: '' }); return; }
 
   const contents = messages.map(m => ({
-    role: m.role === 'assistant' ? 'model' : 'user',
+    role: m.role === 'assistant' ? 'model' : m.role === 'system' ? 'system' : 'user',
     parts: [{ text: m.content }],
   }));
 
   if (system) {
-    contents.unshift({ role: 'user', parts: [{ text: `[SYSTEM]:\n${system}` }] });
-    contents.splice(1, 0, { role: 'model', parts: [{ text: 'Understood.' }] });
+    contents.unshift({ role: 'system', parts: [{ text: system }] });
   }
 
   try {
@@ -48,7 +47,17 @@ export default async function handler(req, res) {
     );
 
     const data = await geminiRes.json();
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    if (!geminiRes.ok) {
+      console.error('[chat] Gemini response status:', geminiRes.status, data);
+    }
+
+    const text =
+      data?.candidates?.[0]?.content?.parts?.[0]?.text ||
+      data?.candidates?.[0]?.output?.[0]?.content?.[0]?.text ||
+      data?.output?.[0]?.content?.[0]?.text ||
+      data?.text ||
+      '';
+
     res.status(200).json({ text });
   } catch (err) {
     console.error('[chat] Gemini error:', err.message);

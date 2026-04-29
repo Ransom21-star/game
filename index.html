@@ -1012,10 +1012,8 @@ select.q-input-field{cursor:pointer;}
 <script>
 // ===== AI ENGINE =====
 // Frontend calls /api/chat ONLY — no keys, no direct AI calls
-let activeEngine = 'claude'; // updated from server response
 
 async function callAEON({ system='', messages=[], maxTokens=1000 }) {
-  let data;
   try {
     const res = await fetch('/api/chat', {
       method: 'POST',
@@ -1024,48 +1022,13 @@ async function callAEON({ system='', messages=[], maxTokens=1000 }) {
     });
 
     if (!res.ok) throw new Error(`Backend ${res.status}`);
-    data = await res.json();
+    const data = await res.json();
+    return data.text || '';
   } catch(e) {
     // Network failure — surface gracefully, never throw to callers
     console.error('[AEON] Backend unreachable:', e.message);
     addLog('penalty', 'AEON channel is unreachable. Check connection.');
     return '';
-  }
-
-  // Update status dot based on which engine the backend used
-  if (data.engine && data.engine !== activeEngine) {
-    activeEngine = data.engine;
-    setAPIDot(data.engine, data.fallback || false);
-    if (data.fallback) {
-      addLog('mission', 'Primary channel at capacity. <span>AEON flowing through Gemini.</span>');
-    }
-  }
-
-  // Both engines failed — backend still returns 200 with error flag
-  if (data.error && !data.text) {
-    addLog('penalty', 'AEON is temporarily unreachable. The System will return.');
-    return '';
-  }
-
-  return data.text || '';
-}
-
-function setAPIDot(engine, isFallback=false) {
-  const dot = document.getElementById('api-dot');
-  const txt = document.getElementById('api-status-text');
-  if (!dot) return;
-  if (engine === 'claude') {
-    dot.style.background = 'var(--freq-green)';
-    dot.style.boxShadow = '0 0 5px var(--freq-green)';
-    if (txt) txt.textContent = 'AEON ONLINE';
-  } else if (engine === 'gemini') {
-    dot.style.background = 'var(--freq-yellow)';
-    dot.style.boxShadow = '0 0 5px var(--freq-yellow)';
-    if (txt) txt.textContent = 'AEON GEMINI';
-  } else {
-    dot.style.background = 'var(--freq-red)';
-    dot.style.boxShadow = '0 0 5px var(--freq-red)';
-    if (txt) txt.textContent = 'AEON OFFLINE';
   }
 }
 

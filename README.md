@@ -4,7 +4,7 @@
 ```
 sovereign-vercel/
 ├── api/
-│   └── chat.js        ← Serverless function: Claude → Gemini fallback
+│   └── chat.js        ← Serverless function: Gemini only
 ├── index.html         ← Full SOVEREIGN frontend (zero API keys)
 ├── package.json       ← Node 24.x, ESM
 ├── vercel.json        ← Routing, function config, CORS headers
@@ -16,18 +16,15 @@ Set in Vercel Dashboard → Project → Settings → Environment Variables:
 
 | Variable        | Value                  |
 |-----------------|------------------------|
-| CLAUDE_API_KEY  | your Anthropic API key |
 | GEMINI_API_KEY  | your Google API key    |
 
 ## How AI routing works
 ```
 Frontend → POST /api/chat
               ↓
-         Try Claude first
-              ↓ fails (quota / timeout / error)
-         Try Gemini fallback
-              ↓ fails
-         Return { engine: 'none', error: true }
+         Gemini only
+              ↓
+         Return { text: 'AI response here' }
               ↓
          Frontend never crashes
 ```
@@ -45,7 +42,6 @@ Frontend → POST /api/chat
    - Root directory: . (current)
 
 3. Set env vars (either CLI or dashboard)
-   vercel env add CLAUDE_API_KEY
    vercel env add GEMINI_API_KEY
 
 4. Redeploy to production
@@ -55,10 +51,8 @@ Frontend → POST /api/chat
    vercel dev
 
 Create .env.local in project root:
-   CLAUDE_API_KEY=your_key_here
    GEMINI_API_KEY=your_key_here
 
 ## Status dot
-🟢 Green  = Claude active
-🟡 Yellow = Gemini fallback active
-🔴 Red    = Both offline
+🟡 Yellow = Gemini active
+🔴 Red    = Offline
